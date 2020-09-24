@@ -22,7 +22,9 @@ import androidx.work.ListenableWorker
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
 import com.duckduckgo.app.fire.DataClearingWorker
+import com.duckduckgo.app.global.job.AppConfigurationWorker
 import com.duckduckgo.app.global.view.ClearDataAction
+import com.duckduckgo.app.job.ConfigurationDownloader
 import com.duckduckgo.app.notification.NotificationFactory
 import com.duckduckgo.app.notification.NotificationScheduler.ClearDataNotificationWorker
 import com.duckduckgo.app.notification.NotificationScheduler.PrivacyNotificationWorker
@@ -44,24 +46,36 @@ class DaggerWorkerFactory(
     private val notificationFactory: NotificationFactory,
     private val clearDataNotification: ClearDataNotification,
     private val privacyProtectionNotification: PrivacyProtectionNotification,
+    private val configurationDownloader: ConfigurationDownloader,
     private val pixel: Pixel
 ) : WorkerFactory() {
 
     override fun createWorker(appContext: Context, workerClassName: String, workerParameters: WorkerParameters): ListenableWorker? {
 
-        val workerClass = Class.forName(workerClassName).asSubclass(ListenableWorker::class.java)
-        val constructor = workerClass.getDeclaredConstructor(Context::class.java, WorkerParameters::class.java)
-        val instance = constructor.newInstance(appContext, workerParameters)
+        try {
+            val workerClass = Class.forName(workerClassName).asSubclass(ListenableWorker::class.java)
+            val constructor = workerClass.getDeclaredConstructor(Context::class.java, WorkerParameters::class.java)
+            val instance = constructor.newInstance(appContext, workerParameters)
 
-        when (instance) {
-            is OfflinePixelScheduler.OfflinePixelWorker -> injectOfflinePixelWorker(instance)
-            is DataClearingWorker -> injectDataClearWorker(instance)
-            is ClearDataNotificationWorker -> injectClearDataNotificationWorker(instance)
-            is PrivacyNotificationWorker -> injectPrivacyNotificationWorker(instance)
-            else -> Timber.i("No injection required for worker $workerClassName")
+            when (instance) {
+                is OfflinePixelScheduler.OfflinePixelWorker -> injectOfflinePixelWorker(instance)
+                is DataClearingWorker -> injectDataClearWorker(instance)
+                is ClearDataNotificationWorker -> injectClearDataNotificationWorker(instance)
+                is PrivacyNotificationWorker -> injectPrivacyNotificationWorker(instance)
+                is AppConfigurationWorker -> injectAppConfigurationWorker(instance)
+                else -> Timber.i("No injection required for worker $workerClassName")
+            }
+
+            return instance
+        } catch (exception: Exception) {
+            Timber.e(exception, "Worker $workerClassName could not be created")
+            return null
         }
 
-        return instance
+    }
+
+    private fun injectAppConfigurationWorker(worker: AppConfigurationWorker) {
+        worker.appConfigurationDownloader = configurationDownloader
     }
 
     private fun injectOfflinePixelWorker(worker: OfflinePixelScheduler.OfflinePixelWorker) {
@@ -88,5 +102,4 @@ class DaggerWorkerFactory(
         worker.pixel = pixel
         worker.notification = privacyProtectionNotification
     }
-
 }

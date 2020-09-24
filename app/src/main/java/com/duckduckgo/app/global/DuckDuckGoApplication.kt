@@ -16,11 +16,9 @@
 
 package com.duckduckgo.app.global
 
-import android.app.Activity
 import android.app.Application
-import android.app.Service
+import android.content.IntentFilter
 import android.os.Build
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
@@ -28,11 +26,11 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.work.WorkerFactory
 import com.duckduckgo.app.browser.BuildConfig
 import com.duckduckgo.app.browser.defaultbrowsing.DefaultBrowserObserver
+import com.duckduckgo.app.browser.shortcut.ShortcutBuilder
+import com.duckduckgo.app.browser.shortcut.ShortcutReceiver
 import com.duckduckgo.app.di.AppComponent
 import com.duckduckgo.app.di.DaggerAppComponent
-import com.duckduckgo.app.fire.DataClearer
-import com.duckduckgo.app.fire.FireActivity
-import com.duckduckgo.app.fire.UnsentForgetAllPixelStore
+import com.duckduckgo.app.fire.*
 import com.duckduckgo.app.global.Theming.initializeTheme
 import com.duckduckgo.app.global.initialization.AppDataLoader
 import com.duckduckgo.app.global.install.AppInstallStore
@@ -40,8 +38,9 @@ import com.duckduckgo.app.global.rating.AppEnjoymentLifecycleObserver
 import com.duckduckgo.app.global.shortcut.AppShortcutCreator
 import com.duckduckgo.app.httpsupgrade.HttpsUpgrader
 import com.duckduckgo.app.job.AppConfigurationSyncer
+import com.duckduckgo.app.job.WorkScheduler
 import com.duckduckgo.app.notification.NotificationRegistrar
-import com.duckduckgo.app.notification.NotificationScheduler
+import com.duckduckgo.app.onboarding.store.UserStageStore
 import com.duckduckgo.app.referral.AppInstallationReferrerStateListener
 import com.duckduckgo.app.settings.db.SettingsDataStore
 import com.duckduckgo.app.statistics.AtbInitializer
@@ -58,9 +57,9 @@ import com.duckduckgo.app.trackerdetection.TrackerDataLoader
 import com.duckduckgo.app.usage.app.AppDaysUsedRecorder
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
-import dagger.android.HasActivityInjector
-import dagger.android.HasServiceInjector
-import dagger.android.support.HasSupportFragmentInjector
+import dagger.android.HasAndroidInjector
+import io.reactivex.exceptions.UndeliverableException
+import io.reactivex.plugins.RxJavaPlugins
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -69,16 +68,10 @@ import timber.log.Timber
 import javax.inject.Inject
 import kotlin.concurrent.thread
 
-open class DuckDuckGoApplication : HasActivityInjector, HasServiceInjector, HasSupportFragmentInjector, Application(), LifecycleObserver {
+open class DuckDuckGoApplication : HasAndroidInjector, Application(), LifecycleObserver {
 
     @Inject
-    lateinit var activityInjector: DispatchingAndroidInjector<Activity>
-
-    @Inject
-    lateinit var supportFragmentInjector: DispatchingAndroidInjector<Fragment>
-
-    @Inject
-    lateinit var serviceInjector: DispatchingAndroidInjector<Service>
+    lateinit var androidInjector: DispatchingAndroidInjector<Any>
 
     @Inject
     lateinit var trackerDataLoader: TrackerDataLoader
@@ -120,6 +113,9 @@ open class DuckDuckGoApplication : HasActivityInjector, HasServiceInjector, HasS
     lateinit var unsentForgetAllPixelStore: UnsentForgetAllPixelStore
 
     @Inject
+    lateinit var dataClearerForegroundAppRestartPixel: DataClearerForegroundAppRestartPixel
+
+    @Inject
     lateinit var offlinePixelScheduler: OfflinePixelScheduler
 
     @Inject
@@ -129,7 +125,7 @@ open class DuckDuckGoApplication : HasActivityInjector, HasServiceInjector, HasS
     lateinit var dataClearer: DataClearer
 
     @Inject
-    lateinit var notificationScheduler: NotificationScheduler
+    lateinit var workScheduler: WorkScheduler
 
     @Inject
     lateinit var workerFactory: WorkerFactory
@@ -156,7 +152,13 @@ open class DuckDuckGoApplication : HasActivityInjector, HasServiceInjector, HasS
     lateinit var atbInitializer: AtbInitializer
 
     @Inject
+    lateinit var shortcutReceiver: ShortcutReceiver
+
+    @Inject
     lateinit var variantManager: VariantManager
+
+    @Inject
+    lateinit var userStageStore: UserStageStore
 
     private var launchedByFireAction: Boolean = false
 
@@ -179,6 +181,8 @@ open class DuckDuckGoApplication : HasActivityInjector, HasServiceInjector, HasS
             it.addObserver(appDaysUsedRecorder)
             it.addObserver(defaultBrowserObserver)
             it.addObserver(appEnjoymentLifecycleObserver)
+            it.addObserver(dataClearerForegroundAppRestartPixel)
+            it.addObserver(userStageStore)
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
@@ -192,6 +196,7 @@ open class DuckDuckGoApplication : HasActivityInjector, HasServiceInjector, HasS
         scheduleOfflinePixels()
 
         notificationRegistrar.registerApp()
+        registerReceiver(shortcutReceiver, IntentFilter(ShortcutBuilder.USE_OUR_APP_SHORTCUT_ADDED_ACTION))
 
         initializeHttpsUpgrader()
         submitUnsentFirePixels()
@@ -204,6 +209,13 @@ open class DuckDuckGoApplication : HasActivityInjector, HasServiceInjector, HasS
 
     private fun configureUncaughtExceptionHandler() {
         Thread.setDefaultUncaughtExceptionHandler(alertingUncaughtExceptionHandler)
+        RxJavaPlugins.setErrorHandler { throwable ->
+            if (throwable is UndeliverableException) {
+                Timber.w(throwable, "An exception happened inside RxJava code but no subscriber was still around to handle it")
+            } else {
+                alertingUncaughtExceptionHandler.uncaughtException(Thread.currentThread(), throwable)
+            }
+        }
     }
 
     private fun recordInstallationTimestamp() {
@@ -256,6 +268,8 @@ open class DuckDuckGoApplication : HasActivityInjector, HasServiceInjector, HasS
             }
             unsentForgetAllPixelStore.resetCount()
         }
+
+        dataClearerForegroundAppRestartPixel.firePendingPixels()
     }
 
     /**
@@ -268,7 +282,7 @@ open class DuckDuckGoApplication : HasActivityInjector, HasServiceInjector, HasS
         appConfigurationSyncer.scheduleImmediateSync()
             .subscribeOn(Schedulers.io())
             .doAfterTerminate {
-                appConfigurationSyncer.scheduleRegularSync(this)
+                appConfigurationSyncer.scheduleRegularSync()
             }
             .subscribe({}, { Timber.w("Failed to download initial app configuration ${it.localizedMessage}") })
     }
@@ -277,11 +291,9 @@ open class DuckDuckGoApplication : HasActivityInjector, HasServiceInjector, HasS
         offlinePixelScheduler.scheduleOfflinePixels()
     }
 
-    override fun activityInjector(): AndroidInjector<Activity> = activityInjector
-
-    override fun supportFragmentInjector(): AndroidInjector<Fragment> = supportFragmentInjector
-
-    override fun serviceInjector(): AndroidInjector<Service> = serviceInjector
+    override fun androidInjector(): AndroidInjector<Any> {
+        return androidInjector
+    }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_START)
     fun onAppForegrounded() {
@@ -297,8 +309,7 @@ open class DuckDuckGoApplication : HasActivityInjector, HasServiceInjector, HasS
     fun onAppResumed() {
         notificationRegistrar.updateStatus()
         GlobalScope.launch {
-            notificationScheduler.scheduleNextNotification()
-
+            workScheduler.scheduleWork()
             atbInitializer.initializeAfterReferrerAvailable()
         }
     }
@@ -306,4 +317,5 @@ open class DuckDuckGoApplication : HasActivityInjector, HasServiceInjector, HasS
     companion object {
         private const val APP_RESTART_CAUSED_BY_FIRE_GRACE_PERIOD: Long = 10_000L
     }
+
 }

@@ -16,7 +16,6 @@
 
 package com.duckduckgo.app.di
 
-
 import android.app.Application
 import com.duckduckgo.app.browser.autocomplete.BrowserAutoCompleteModule
 import com.duckduckgo.app.browser.di.BrowserModule
@@ -67,7 +66,8 @@ import javax.inject.Singleton
         AppUsageModule::class,
         FileModule::class,
         UncaughtExceptionModule::class,
-        PlayStoreReferralModule::class
+        PlayStoreReferralModule::class,
+        CoroutinesModule::class
     ]
 )
 interface AppComponent : AndroidInjector<DuckDuckGoApplication> {

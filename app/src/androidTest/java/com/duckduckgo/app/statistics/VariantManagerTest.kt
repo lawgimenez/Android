@@ -17,7 +17,6 @@
 package com.duckduckgo.app.statistics
 
 import com.duckduckgo.app.statistics.VariantManager.Companion.DEFAULT_VARIANT
-import com.duckduckgo.app.statistics.VariantManager.Companion.RESERVED_EU_AUCTION_VARIANT
 import com.duckduckgo.app.statistics.VariantManager.VariantFeature.*
 import org.junit.Assert.*
 import org.junit.Test
@@ -25,74 +24,62 @@ import org.junit.Test
 class VariantManagerTest {
 
     private val variants = VariantManager.ACTIVE_VARIANTS +
-            variantWithKey(RESERVED_EU_AUCTION_VARIANT) +
+            VariantManager.REFERRER_VARIANTS +
             DEFAULT_VARIANT
 
     // SERP Experiment(s)
 
     @Test
-    fun serpControlVariantIsInactiveAndHasNoFeatures() {
+    fun serpControlVariantHasExpectedWeightAndNoFeatures() {
         val variant = variants.first { it.key == "sc" }
-        assertEqualsDouble(0.0, variant.weight)
+        assertEqualsDouble(1.0, variant.weight)
         assertEquals(0, variant.features.size)
     }
 
     @Test
-    fun serpExperimentalVariantIsInactiveAndHasNoFeatures() {
+    fun serpExperimentalVariantHasExpectedWeightAndNoFeatures() {
         val variant = variants.first { it.key == "se" }
+        assertEqualsDouble(1.0, variant.weight)
+        assertEquals(0, variant.features.size)
+    }
+
+    // Single Search Bar Experiments
+    @Test
+    fun serpHeaderControlVariantHasExpectedWeightAndNoFeatures() {
+        val variant = variants.first { it.key == "zg" }
         assertEqualsDouble(0.0, variant.weight)
         assertEquals(0, variant.features.size)
     }
 
-    // Concept test experiment
-
     @Test
-    fun conceptTestControlVariantIsInactiveAndHasNoFeatures() {
-        val variant = variants.first { it.key == "mc" }
+    fun serpHeaderVariantHasExpectedWeightAndSERPHeaderRemovalFeature() {
+        val variant = variants.first { it.key == "zi" }
         assertEqualsDouble(0.0, variant.weight)
-        assertEquals(0, variant.features.size)
+        assertEquals(1, variant.features.size)
+        assertEquals(SerpHeaderRemoval, variant.features[0])
     }
 
     @Test
-    fun conceptTestNoCtaVariantIsInactiveAndHasSuppressCtaFeatures() {
-        val variant = variants.first { it.key == "md" }
+    fun serpHeaderVariantHasExpectedWeightAndSERPHeaderQueryReplacementFeature() {
+        val variant = variants.first { it.key == "zh" }
         assertEqualsDouble(0.0, variant.weight)
-        assertEquals(2, variant.features.size)
-        assertTrue(variant.hasFeature(SuppressHomeTabWidgetCta))
-        assertTrue(variant.hasFeature(SuppressOnboardingDefaultBrowserCta))
+        assertEquals(1, variant.features.size)
+        assertEquals(SerpHeaderQueryReplacement, variant.features[0])
     }
 
+    // Fire button education
     @Test
-    fun conceptTestExperimentalVariantIsInactiveAndHasConceptTestAndSuppressCtaFeatures() {
-        val variant = variants.first { it.key == "me" }
-        assertEqualsDouble(0.0, variant.weight)
-        assertEquals(3, variant.features.size)
-        assertTrue(variant.hasFeature(ConceptTest))
-        assertTrue(variant.hasFeature(SuppressHomeTabWidgetCta))
-        assertTrue(variant.hasFeature(SuppressOnboardingDefaultBrowserCta))
-    }
-
-    // CTA on Concept Test experiments
-
-    @Test
-    fun insertCtaConceptTestControlVariantIsActiveAndHasConceptTestAndHasExpectedFeatures() {
-        val variant = variants.first { it.key == "mj" }
+    fun fireButtonEducationControlGroupVariantIsActive() {
+        val variant = variants.first { it.key == "zm" }
         assertEqualsDouble(1.0, variant.weight)
-        assertEquals(2, variant.features.size)
-        assertTrue(variant.hasFeature(ConceptTest))
-        assertTrue(variant.hasFeature(SuppressOnboardingDefaultBrowserContinueScreen))
     }
 
     @Test
-    fun insertCtaConceptTestWithCtasAsDaxDialogsExperimentalVariantIsActiveAndHasExpectedFeatures() {
-        val variant = variants.first { it.key == "mh" }
+    fun fireButtonEducationVariantHasExpectedWeightAndFeatures() {
+        val variant = variants.first { it.key == "zr" }
         assertEqualsDouble(1.0, variant.weight)
-        assertEquals(5, variant.features.size)
-        assertTrue(variant.hasFeature(ConceptTest))
-        assertTrue(variant.hasFeature(SuppressHomeTabWidgetCta))
-        assertTrue(variant.hasFeature(SuppressOnboardingDefaultBrowserCta))
-        assertTrue(variant.hasFeature(DefaultBrowserDaxCta))
-        assertTrue(variant.hasFeature(SearchWidgetDaxCta))
+        assertEquals(1, variant.features.size)
+        assertTrue(variant.hasFeature(FireButtonEducation))
     }
 
     @Test
@@ -111,10 +98,5 @@ class VariantManagerTest {
         if (comparison != 0) {
             fail("Doubles are not equal. Expected $expected but was $actual")
         }
-    }
-
-    @Suppress("SameParameterValue")
-    private fun variantWithKey(key: String): Variant {
-        return DEFAULT_VARIANT.copy(key = key)
     }
 }

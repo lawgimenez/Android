@@ -24,7 +24,6 @@ import com.duckduckgo.app.trackerdetection.model.Entity
 import javax.inject.Inject
 import javax.inject.Singleton
 
-
 @Singleton
 class SiteFactory @Inject constructor(
     private val privacyPractices: PrivacyPractices,
@@ -37,8 +36,8 @@ class SiteFactory @Inject constructor(
      * @see [loadFullSiteDetails] to ensure full privacy details are loaded
      */
     @AnyThread
-    fun buildSite(url: String, title: String? = null): Site {
-        return SiteMonitor(url, title)
+    fun buildSite(url: String, title: String? = null, httpUpgraded: Boolean = false): Site {
+        return SiteMonitor(url, title, httpUpgraded)
     }
 
     /**
@@ -55,7 +54,8 @@ class SiteFactory @Inject constructor(
     }
 
     data class SitePrivacyData(
-        val url: String, val practices: PrivacyPractices.Practices,
+        val url: String,
+        val practices: PrivacyPractices.Practices,
         val entity: Entity?,
         val prevalence: Double?
     )

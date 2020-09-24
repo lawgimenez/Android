@@ -24,6 +24,7 @@ import com.duckduckgo.app.blockingObserve
 import com.duckduckgo.app.browser.BuildConfig
 import com.duckduckgo.app.browser.defaultbrowsing.DefaultBrowserDetector
 import com.duckduckgo.app.global.DuckDuckGoTheme
+import com.duckduckgo.app.icon.api.AppIcon
 import com.duckduckgo.app.settings.SettingsViewModel.Command
 import com.duckduckgo.app.settings.clear.ClearWhatOption.CLEAR_NONE
 import com.duckduckgo.app.settings.clear.ClearWhenOption.APP_EXIT_ONLY
@@ -31,7 +32,11 @@ import com.duckduckgo.app.settings.db.SettingsDataStore
 import com.duckduckgo.app.statistics.Variant
 import com.duckduckgo.app.statistics.VariantManager
 import com.duckduckgo.app.statistics.pixels.Pixel
-import com.nhaarman.mockitokotlin2.*
+import com.nhaarman.mockitokotlin2.KArgumentCaptor
+import com.nhaarman.mockitokotlin2.argumentCaptor
+import com.nhaarman.mockitokotlin2.atLeastOnce
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.whenever
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Rule
@@ -78,6 +83,7 @@ class SettingsViewModelTest {
 
         whenever(mockAppSettingsDataStore.automaticallyClearWhenOption).thenReturn(APP_EXIT_ONLY)
         whenever(mockAppSettingsDataStore.automaticallyClearWhatOption).thenReturn(CLEAR_NONE)
+        whenever(mockAppSettingsDataStore.appIcon).thenReturn(AppIcon.DEFAULT)
 
         whenever(mockVariantManager.getVariant()).thenReturn(VariantManager.DEFAULT_VARIANT)
     }
@@ -198,6 +204,13 @@ class SettingsViewModelTest {
     }
 
     @Test
+    fun whenWhitelistSelectedThenPixelIsSentAndWhitelistLaunched() {
+        testee.onManageWhitelistSelected()
+        verify(mockPixel).fire(Pixel.PixelName.SETTINGS_MANAGE_WHITELIST)
+        verify(commandObserver).onChanged(Command.LaunchWhitelist)
+    }
+
+    @Test
     fun whenVariantIsEmptyThenEmptyVariantIncludedInSettings() {
         testee.start()
         val expectedStartString = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
@@ -210,6 +223,14 @@ class SettingsViewModelTest {
         testee.start()
         val expectedStartString = "${BuildConfig.VERSION_NAME} ab (${BuildConfig.VERSION_CODE})"
         assertEquals(expectedStartString, latestViewState().version)
+    }
+
+    @Test
+    fun whenChangeIconRequestedThenCommandIsChangeIcon() {
+        testee.userRequestedToChangeIcon()
+        testee.command.blockingObserve()
+        verify(commandObserver).onChanged(commandCaptor.capture())
+        assertEquals(Command.LaunchAppIcon, commandCaptor.firstValue)
     }
 
     private fun latestViewState() = testee.viewState.value!!

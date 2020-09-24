@@ -22,6 +22,7 @@ import com.duckduckgo.app.browser.BuildConfig
 import com.duckduckgo.app.browser.defaultbrowsing.DefaultBrowserDetector
 import com.duckduckgo.app.global.DuckDuckGoTheme
 import com.duckduckgo.app.global.SingleLiveEvent
+import com.duckduckgo.app.icon.api.AppIcon
 import com.duckduckgo.app.settings.clear.ClearWhatOption
 import com.duckduckgo.app.settings.clear.ClearWhenOption
 import com.duckduckgo.app.settings.db.SettingsDataStore
@@ -46,7 +47,8 @@ class SettingsViewModel @Inject constructor(
         val autoCompleteSuggestionsEnabled: Boolean = true,
         val showDefaultBrowserSetting: Boolean = false,
         val isAppDefaultBrowser: Boolean = false,
-        val automaticallyClearData: AutomaticallyClearData = AutomaticallyClearData(ClearWhatOption.CLEAR_NONE, ClearWhenOption.APP_EXIT_ONLY)
+        val automaticallyClearData: AutomaticallyClearData = AutomaticallyClearData(ClearWhatOption.CLEAR_NONE, ClearWhenOption.APP_EXIT_ONLY),
+        val appIcon: AppIcon = AppIcon.DEFAULT
     )
 
     data class AutomaticallyClearData(
@@ -55,9 +57,12 @@ class SettingsViewModel @Inject constructor(
         val clearWhenOptionEnabled: Boolean = true
     )
 
-
     sealed class Command {
         object LaunchFeedback : Command()
+        object LaunchFireproofWebsites : Command()
+        object LaunchLocation : Command()
+        object LaunchWhitelist : Command()
+        object LaunchAppIcon : Command()
         object UpdateTheme : Command()
     }
 
@@ -72,7 +77,6 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun start() {
-
         val defaultBrowserAlready = defaultWebBrowserCapability.isDefaultBrowser()
         val variant = variantManager.getVariant()
         val isLightTheme = settingsDataStore.theme == DuckDuckGoTheme.LIGHT
@@ -87,12 +91,25 @@ class SettingsViewModel @Inject constructor(
             isAppDefaultBrowser = defaultBrowserAlready,
             showDefaultBrowserSetting = defaultWebBrowserCapability.deviceSupportsDefaultBrowserConfiguration(),
             version = obtainVersion(variant.key),
-            automaticallyClearData = AutomaticallyClearData(automaticallyClearWhat, automaticallyClearWhen, automaticallyClearWhenEnabled)
+            automaticallyClearData = AutomaticallyClearData(automaticallyClearWhat, automaticallyClearWhen, automaticallyClearWhenEnabled),
+            appIcon = settingsDataStore.appIcon
         )
     }
 
     fun userRequestedToSendFeedback() {
         command.value = Command.LaunchFeedback
+    }
+
+    fun userRequestedToChangeIcon() {
+        command.value = Command.LaunchAppIcon
+    }
+
+    fun onFireproofWebsitesClicked() {
+        command.value = Command.LaunchFireproofWebsites
+    }
+
+    fun onLocationClicked() {
+        command.value = Command.LaunchLocation
     }
 
     fun onLightThemeToggled(enabled: Boolean) {
@@ -108,7 +125,6 @@ class SettingsViewModel @Inject constructor(
     fun onAutocompleteSettingChanged(enabled: Boolean) {
         Timber.i("User changed autocomplete setting, is now enabled: $enabled")
         settingsDataStore.autoCompleteSuggestionsEnabled = enabled
-
         viewState.value = currentViewState().copy(autoCompleteSuggestionsEnabled = enabled)
     }
 
@@ -159,6 +175,11 @@ class SettingsViewModel @Inject constructor(
         )
     }
 
+    fun onManageWhitelistSelected() {
+        pixel.fire(SETTINGS_MANAGE_WHITELIST)
+        command.value = Command.LaunchWhitelist
+    }
+
     private fun currentViewState(): ViewState {
         return viewState.value!!
     }
@@ -181,5 +202,4 @@ class SettingsViewModel @Inject constructor(
             else -> null
         }
     }
-
 }

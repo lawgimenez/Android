@@ -36,6 +36,8 @@ interface Pixel {
         FORGET_ALL_PRESSED_BROWSING("mf_bp"),
         FORGET_ALL_PRESSED_TABSWITCHING("mf_tp"),
         FORGET_ALL_EXECUTED("mf"),
+        FORGET_ALL_AUTO_RESTART("m_f_r"),
+        FORGET_ALL_AUTO_RESTART_WITH_INTENT("m_f_ri"),
 
         APPLICATION_CRASH("m_d_ac"),
         APPLICATION_CRASH_GLOBAL("m_d_ac_g"),
@@ -53,6 +55,7 @@ interface Pixel {
         WEB_RENDERER_GONE_CRASH("m_d_wrg_c"),
         WEB_RENDERER_GONE_KILLED("m_d_wrg_k"),
         BROKEN_SITE_REPORTED("m_bsr"),
+        BROKEN_SITE_REPORT("epbf"),
 
         ONBOARDING_DEFAULT_BROWSER_VISUALIZED("m_odb_v"),
         ONBOARDING_DEFAULT_BROWSER_LAUNCHED("m_odb_l"),
@@ -62,7 +65,6 @@ interface Pixel {
         ONBOARDING_DAX_CTA_SHOWN("m_odc_s"),
         ONBOARDING_DAX_ALL_CTA_HIDDEN("m_odc_h"),
         ONBOARDING_DAX_CTA_OK_BUTTON("m_odc_ok"),
-        ONBOARDING_DAX_CTA_CANCEL_BUTTON("m_odc_c"),
 
         PRIVACY_DASHBOARD_OPENED("mp"),
         PRIVACY_DASHBOARD_SCORECARD("mp_c"),
@@ -70,6 +72,13 @@ interface Pixel {
         PRIVACY_DASHBOARD_GLOBAL_STATS("mp_s"),
         PRIVACY_DASHBOARD_PRIVACY_PRACTICES("mp_p"),
         PRIVACY_DASHBOARD_NETWORKS("mp_n"),
+        PRIVACY_DASHBOARD_WHITELIST_ADD("mp_wla"),
+        PRIVACY_DASHBOARD_WHITELIST_REMOVE("mp_wlr"),
+        PRIVACY_DASHBOARD_MANAGE_WHITELIST("mp_mw"),
+        PRIVACY_DASHBOARD_REPORT_BROKEN_SITE("mp_rb"),
+
+        BROWSER_MENU_WHITELIST_ADD("mb_wla"),
+        BROWSER_MENU_WHITELIST_REMOVE("mb_wlr"),
 
         HTTPS_NO_LOOKUP("m_https_nl"),
         HTTPS_LOCAL_UPGRADE("m_https_lu"),
@@ -77,9 +86,6 @@ interface Pixel {
         HTTPS_SERVICE_CACHE_UPGRADE("m_https_scu"),
         HTTPS_SERVICE_REQUEST_NO_UPGRADE("m_https_srn"),
         HTTPS_SERVICE_CACHE_NO_UPGRADE("m_https_scn"),
-
-        TRACKER_BLOCKER_DASHBOARD_TURNED_ON(pixelName = "m_tb_on_pd"),
-        TRACKER_BLOCKER_DASHBOARD_TURNED_OFF(pixelName = "m_tb_off_pd"),
 
         DEFAULT_BROWSER_SET("m_db_s"),
         DEFAULT_BROWSER_NOT_SET("m_db_ns"),
@@ -94,12 +100,17 @@ interface Pixel {
         WIDGETS_ADDED(pixelName = "m_w_a"),
         WIDGETS_DELETED(pixelName = "m_w_d"),
 
+        APP_NOTIFICATION_LAUNCH(pixelName = "m_n_l"),
         APP_WIDGET_LAUNCH(pixelName = "m_w_l"),
         APP_ASSIST_LAUNCH(pixelName = "m_a_l"),
         APP_SYSTEM_SEARCH_BOX_LAUNCH(pixelName = "m_ssb_l"),
         INTERSTITIAL_LAUNCH_BROWSER_QUERY(pixelName = "m_i_lbq"),
         INTERSTITIAL_LAUNCH_DEVICE_APP(pixelName = "m_i_sda"),
         INTERSTITIAL_LAUNCH_DAX(pixelName = "m_i_ld"),
+        INTERSTITIAL_ONBOARDING_SHOWN(pixelName = "m_io_s"),
+        INTERSTITIAL_ONBOARDING_DISMISSED(pixelName = "m_io_d"),
+        INTERSTITIAL_ONBOARDING_LESS_PRESSED(pixelName = "m_io_l"),
+        INTERSTITIAL_ONBOARDING_MORE_PRESSED(pixelName = "m_io_m"),
 
         LONG_PRESS("mlp"),
         LONG_PRESS_DOWNLOAD_IMAGE("mlp_i"),
@@ -112,6 +123,7 @@ interface Pixel {
         SETTINGS_OPENED("ms"),
         SETTINGS_THEME_TOGGLED_LIGHT("ms_tl"),
         SETTINGS_THEME_TOGGLED_DARK("ms_td"),
+        SETTINGS_MANAGE_WHITELIST("ms_mw"),
 
         SURVEY_CTA_SHOWN(pixelName = "mus_cs"),
         SURVEY_CTA_DISMISSED(pixelName = "mus_cd"),
@@ -155,7 +167,58 @@ interface Pixel {
         FEEDBACK_NEGATIVE_SUBMISSION("mfbs_%s_%s_%s"),
 
         AUTOCOMPLETE_BOOKMARK_SELECTION("m_aut_s_b"),
-        AUTOCOMPLETE_SEARCH_SELECTION("m_aut_s_s")
+        AUTOCOMPLETE_SEARCH_SELECTION("m_aut_s_s"),
+
+        SERP_REQUERY("rq_%s"),
+
+        CHANGE_APP_ICON_OPENED("m_ic"),
+
+        MENU_ACTION_POPUP_OPENED("m_nav_pm_o"),
+        MENU_ACTION_FIRE_PRESSED("m_nav_f_p"),
+        MENU_ACTION_REFRESH_PRESSED("m_nav_r_p"),
+        MENU_ACTION_NEW_TAB_PRESSED("m_nav_nt_p"),
+        MENU_ACTION_BOOKMARKS_PRESSED("m_nav_b_p"),
+
+        COOKIE_DATABASE_NOT_FOUND("m_cdb_nf"),
+        COOKIE_DATABASE_OPEN_ERROR("m_cdb_oe"),
+        COOKIE_DATABASE_DELETE_ERROR("m_cdb_de"),
+        COOKIE_DATABASE_CORRUPTED_ERROR("m_cdb_ce"),
+        COOKIE_DATABASE_EXCEPTION_OPEN_ERROR("m_cdb_e_oe"),
+        COOKIE_DATABASE_EXCEPTION_DELETE_ERROR("m_cdb_e_de"),
+
+        FIREPROOF_WEBSITE_ADDED("m_fw_a"),
+        FIREPROOF_WEBSITE_REMOVE("m_fw_r"),
+        FIREPROOF_LOGIN_DIALOG_SHOWN("m_fw_ld_s"),
+        FIREPROOF_WEBSITE_LOGIN_ADDED("m_fw_l_a"),
+        FIREPROOF_WEBSITE_LOGIN_DISMISS("m_fw_l_d"),
+        FIREPROOF_WEBSITE_DELETED("m_fw_d"),
+        FIREPROOF_LOGIN_TOGGLE_ENABLED("m_fw_d_e"),
+        FIREPROOF_LOGIN_TOGGLE_DISABLED("m_fw_d_d"),
+        FIREPROOF_WEBSITE_UNDO("m_fw_u"),
+
+        USE_OUR_APP_NOTIFICATION_SUFFIX("uoa"),
+        USE_OUR_APP_DIALOG_SHOWN("m_uoa_d"),
+        USE_OUR_APP_DIALOG_OK("m_uoa_d_ok"),
+        USE_OUR_APP_SHORTCUT_ADDED("m_uoa_s_a"),
+        USE_OUR_APP_DIALOG_DELETE_SHOWN("m_uoa_dd"),
+        UOA_VISITED_AFTER_SHORTCUT("m_uoa_vas"),
+        UOA_VISITED_AFTER_NOTIFICATION("m_uoa_van"),
+        UOA_VISITED_AFTER_DELETE_CTA("m_uoa_vad"),
+        UOA_VISITED("m_uoa_v"),
+
+        USE_OUR_APP_SHORTCUT_OPENED("m_sho_uoa_o"),
+        SHORTCUT_ADDED("m_sho_a"),
+        SHORTCUT_OPENED("m_sho_o"),
+
+        PRECISE_LOCATION_SYSTEM_DIALOG_ENABLE("m_pc_syd_e"),
+        PRECISE_LOCATION_SYSTEM_DIALOG_LATER("m_pc_syd_l"),
+        PRECISE_LOCATION_SYSTEM_DIALOG_NEVER("m_pc_syd_n"),
+        PRECISE_LOCATION_SETTINGS_LOCATION_PERMISSION_ENABLE("m_pc_s_l_e"),
+        PRECISE_LOCATION_SETTINGS_LOCATION_PERMISSION_DISABLE("m_pc_s_l_d"),
+        PRECISE_LOCATION_SITE_DIALOG_ALLOW_ALWAYS("m_pc_sd_aa"),
+        PRECISE_LOCATION_SITE_DIALOG_ALLOW_ONCE("m_pc_sd_ao"),
+        PRECISE_LOCATION_SITE_DIALOG_DENY_ALWAYS("m_pc_sd_da"),
+        PRECISE_LOCATION_SITE_DIALOG_DENY_ONCE("m_pc_sd_do"),
     }
 
     object PixelParameter {
@@ -163,12 +226,16 @@ interface Pixel {
         const val URL = "url"
         const val COUNT = "count"
         const val EXCEPTION_MESSAGE = "m"
+        const val EXCEPTION_APP_VERSION = "v"
+        const val EXCEPTION_TIMESTAMP = "t"
         const val BOOKMARK_CAPABLE = "bc"
         const val SHOWED_BOOKMARKS = "sb"
         const val DEFAULT_BROWSER_BEHAVIOUR_TRIGGERED = "bt"
         const val DEFAULT_BROWSER_SET_FROM_ONBOARDING = "fo"
         const val DEFAULT_BROWSER_SET_ORIGIN = "dbo"
         const val CTA_SHOWN = "cta"
+        const val SERP_QUERY_CHANGED = "1"
+        const val SERP_QUERY_NOT_CHANGED = "0"
     }
 
     object PixelValues {
@@ -180,19 +247,14 @@ interface Pixel {
         const val DAX_INITIAL_CTA = "i"
         const val DAX_END_CTA = "e"
         const val DAX_SERP_CTA = "s"
-        const val DAX_DEFAULT_BROWSER_CTA_DIALOG = "dbd"
-        const val DAX_DEFAULT_BROWSER_CTA_SETTINGS = "dbs"
-        const val DAX_SEARCH_WIDGET_CTA_AUTO = "wa"
-        const val DAX_SEARCH_WIDGET_CTA_MANUAL = "wm"
         const val DAX_NETWORK_CTA_1 = "n"
-        const val DAX_NETWORK_CTA_2 = "n2"
         const val DAX_TRACKERS_BLOCKED_CTA = "t"
         const val DAX_NO_TRACKERS_CTA = "nt"
     }
 
-    fun fire(pixel: PixelName, parameters: Map<String, String?> = emptyMap())
-    fun fire(pixelName: String, parameters: Map<String, String?> = emptyMap())
-    fun fireCompletable(pixelName: String, parameters: Map<String, String?>): Completable
+    fun fire(pixel: PixelName, parameters: Map<String, String> = emptyMap(), encodedParameters: Map<String, String> = emptyMap())
+    fun fire(pixelName: String, parameters: Map<String, String> = emptyMap(), encodedParameters: Map<String, String> = emptyMap())
+    fun fireCompletable(pixelName: String, parameters: Map<String, String>, encodedParameters: Map<String, String> = emptyMap()): Completable
 }
 
 class ApiBasedPixel @Inject constructor(
@@ -202,24 +264,24 @@ class ApiBasedPixel @Inject constructor(
     private val deviceInfo: DeviceInfo
 ) : Pixel {
 
-    override fun fire(pixel: PixelName, parameters: Map<String, String?>) {
-        fire(pixel.pixelName, parameters)
+    override fun fire(pixel: PixelName, parameters: Map<String, String>, encodedParameters: Map<String, String>) {
+        fire(pixel.pixelName, parameters, encodedParameters)
     }
 
-    override fun fire(pixelName: String, parameters: Map<String, String?>) {
-        fireCompletable(pixelName, parameters)
+    override fun fire(pixelName: String, parameters: Map<String, String>, encodedParameters: Map<String, String>) {
+        fireCompletable(pixelName, parameters, encodedParameters)
             .subscribeOn(Schedulers.io())
             .subscribe({
-                Timber.v("Pixel sent: $pixelName with params: $parameters")
+                Timber.v("Pixel sent: $pixelName with params: $parameters $encodedParameters")
             }, {
-                Timber.w("Pixel failed: $pixelName with params: $parameters")
+                Timber.w(it, "Pixel failed: $pixelName with params: $parameters $encodedParameters")
             })
     }
 
-    override fun fireCompletable(pixelName: String, parameters: Map<String, String?>): Completable {
+    override fun fireCompletable(pixelName: String, parameters: Map<String, String>, encodedParameters: Map<String, String>): Completable {
         val defaultParameters = mapOf(PixelParameter.APP_VERSION to deviceInfo.appVersion)
         val fullParameters = defaultParameters.plus(parameters)
         val atb = statisticsDataStore.atb?.formatWithVariant(variantManager.getVariant()) ?: ""
-        return api.fire(pixelName, deviceInfo.formFactor().description, atb, fullParameters)
+        return api.fire(pixelName, deviceInfo.formFactor().description, atb, fullParameters, encodedParameters)
     }
 }

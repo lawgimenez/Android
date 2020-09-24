@@ -29,12 +29,16 @@ import com.duckduckgo.app.browser.rating.ui.GiveFeedbackDialogFragment
 import com.duckduckgo.app.browser.rating.ui.RateAppDialogFragment
 import com.duckduckgo.app.fire.DataClearer
 import com.duckduckgo.app.global.ApplicationClearDataState
+import com.duckduckgo.app.global.DefaultDispatcherProvider
+import com.duckduckgo.app.global.DispatcherProvider
 import com.duckduckgo.app.global.SingleLiveEvent
 import com.duckduckgo.app.global.rating.AppEnjoymentPromptEmitter
 import com.duckduckgo.app.global.rating.AppEnjoymentPromptOptions
 import com.duckduckgo.app.global.rating.AppEnjoymentUserEventRecorder
 import com.duckduckgo.app.global.rating.PromptCount
+import com.duckduckgo.app.global.useourapp.UseOurAppDetector
 import com.duckduckgo.app.privacy.ui.PrivacyDashboardActivity.Companion.RELOAD_RESULT_CODE
+import com.duckduckgo.app.statistics.pixels.Pixel
 import com.duckduckgo.app.tabs.model.TabEntity
 import com.duckduckgo.app.tabs.model.TabRepository
 import kotlinx.coroutines.CoroutineScope
@@ -48,7 +52,10 @@ class BrowserViewModel(
     private val queryUrlConverter: OmnibarEntryConverter,
     private val dataClearer: DataClearer,
     private val appEnjoymentPromptEmitter: AppEnjoymentPromptEmitter,
-    private val appEnjoymentUserEventRecorder: AppEnjoymentUserEventRecorder
+    private val appEnjoymentUserEventRecorder: AppEnjoymentUserEventRecorder,
+    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider(),
+    private val pixel: Pixel,
+    private val useOurAppDetector: UseOurAppDetector
 ) : AppEnjoymentDialogFragment.Listener,
     RateAppDialogFragment.Listener,
     GiveFeedbackDialogFragment.Listener,
@@ -119,18 +126,33 @@ class BrowserViewModel(
         appEnjoymentPromptEmitter.promptType.observeForever(appEnjoymentObserver)
     }
 
-    suspend fun onNewTabRequested(isDefaultTab: Boolean = false): String {
-        return tabRepository.add(isDefaultTab = isDefaultTab)
+    suspend fun onNewTabRequested(sourceTabId: String? = null): String {
+        return if (sourceTabId != null) {
+            tabRepository.addFromSourceTab(sourceTabId = sourceTabId)
+        } else {
+            tabRepository.add()
+        }
     }
 
-    suspend fun onOpenInNewTabRequested(query: String, skipHome: Boolean = false): String {
-        return tabRepository.add(queryUrlConverter.convertQueryToUrl(query), skipHome, isDefaultTab = false)
+    suspend fun onOpenInNewTabRequested(query: String, sourceTabId: String? = null, skipHome: Boolean = false): String {
+        return if (sourceTabId != null) {
+            tabRepository.addFromSourceTab(
+                url = queryUrlConverter.convertQueryToUrl(query),
+                skipHome = skipHome,
+                sourceTabId = sourceTabId
+            )
+        } else {
+            tabRepository.add(
+                url = queryUrlConverter.convertQueryToUrl(query),
+                skipHome = skipHome
+            )
+        }
     }
 
     suspend fun onTabsUpdated(tabs: List<TabEntity>?) {
-        if (tabs == null || tabs.isEmpty()) {
+        if (tabs.isNullOrEmpty()) {
             Timber.i("Tabs list is null or empty; adding default tab")
-            tabRepository.add(isDefaultTab = true)
+            tabRepository.addDefaultTab()
             return
         }
     }
@@ -196,5 +218,16 @@ class BrowserViewModel(
 
     override fun onUserCancelledGiveFeedbackDialog(promptCount: PromptCount) {
         onUserDeclinedToGiveFeedback(promptCount)
+    }
+
+    fun onOpenShortcut(url: String) {
+        launch(dispatchers.io()) {
+            tabRepository.selectByUrlOrNewTab(queryUrlConverter.convertQueryToUrl(url))
+            if (useOurAppDetector.isUseOurAppUrl(url)) {
+                pixel.fire(Pixel.PixelName.USE_OUR_APP_SHORTCUT_OPENED)
+            } else {
+                pixel.fire(Pixel.PixelName.SHORTCUT_OPENED)
+            }
+        }
     }
 }

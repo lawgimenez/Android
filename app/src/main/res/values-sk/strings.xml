@@ -1,27 +1,14 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
     <string name="duckDuckGoLogoDescription">Logo DuckDuckGo</string>
+    <string name="duckDuckGoPrivacySimplified">Súkromie jednoducho.</string>
     <string name="yes">Áno</string>
     <string name="no">žiadny</string>
+    <string name="search">Vyhľadávať</string>
 
     <!-- Onboarding Activity -->
     <string name="onboardingDefaultBrowserDescription">Na automatické vyhľadávanie a prehliadanie s DuckDuckGo navštívte Nastavenia.</string>
-    <string name="onboardingContinue">Pokračovať</string>
-    <string name="onboardingContinueFinalPage">Spustiť prehľadávanie</string>
     <string name="onboardingDefaultBrowserTitle">Nastav DuckDuckGo ako svoju predvolenú aplikáciu</string>
-    <string name="onboardingDefaultBrowserTitleDefaultSet">Zoznám sa s pokojom mysle</string>
-
-    <!-- Unified Welcome Page -->
-    <string name="unifiedOnboardingTitleFirstVisit">Vitajte na\nDuckDuckGo!</string>
-    <string name="unifiedOnboardingSubtitleTrackerBlockingEnabled">Zabezpečte si súkromie pri vyhľadávaní a prehľadávaní webu.</string>
-    <string name="unifiedOnboardingPrivateSearchTitle">Súkromné vyhľadávanie</string>
-    <string name="unifiedOnboardingPrivateSearchSubtitle">S DuckDuckGo je vyhľadávanie vždy súkromné.</string>
-    <string name="unifiedOnboardingBrowsingProtectionTitle">Ochrana prehľadávania</string>
-    <string name="unifiedOnboardingBrowsingProtectionSubtitleTrackerBlockingEnabled">Blokujte sledovacie zariadenia a využívajte automatické bezpečné prehliadanie.</string>
-    <string name="unifiedOnboardingDataClearingTitle">Vymazanie údajov</string>
-    <string name="unifiedOnboardingDataClearingSubtitle">Klepnutím na tlačidlo vymažete údaje o prehľadávaní.</string>
-    <string name="unifiedOnboardingCustomizationTitle">Prispôsobenie na mieru</string>
-    <string name="unifiedOnboardingCustomizationSubtitle">Vyberte tému a prispôsobte si na mieru funkcie ochrany súkromia.</string>
 
     <!-- Default Browser -->
     <string name="cannotLaunchDefaultAppSettings">Nedá sa spustiť obrazovka predvolených nastavení aplikácie</string>
@@ -29,7 +16,6 @@
     <string name="defaultBrowserMaybeLater">Možno neskôr</string>
     <string name="defaultBrowserLetsDoIt">Poďme na to!</string>
     <string name="defaultBrowserDescriptionNoDefault">Vždy otvor odkazy s pokojom mysle.</string>
-    <string name="defaultBrowserDescriptionDefaultSet">Pomocou DuckDuckGo sú tvoje online údaje v predvolenom nastavení viac chránené bez ohľadu na to, kam ťa internet zavedie.</string>
     <string name="defaultBrowserInstructions">Zvoľ DuckDuckGo a ťukni <font color="#678fff">vždy</font>.</string>
 
     <!-- Browser Activity -->
@@ -87,10 +73,11 @@
     <string name="closeTab">Zatvoriť karta</string>
 
     <!-- Privacy Dashboard Activities -->
+    <string name="privacyProtectionToggle">Ochrana súkromia stránky</string>
+    <string name="privacyProtectionEnabled">OCHRANA STRÁNKY ZAPNUTÁ</string>
+    <string name="privacyProtectionDisabled">OCHRANA STRÁNKY ZAKÁZANÁ</string>
     <string name="privacyDashboardActivityTitle">Ovládací panel ochrany súkromia</string>
-    <string name="privacyProtectionEnabled">OCHRANA SÚKROMIA ZAPNUTÁ</string>
-    <string name="privacyProtectionDisabled">OCHRANA SÚKROMIA VYPNUTÁ</string>
-    <string name="privacyProtectionUpgraded" tools:ignore="TypographyQuotes">ZDOKONALENÉ Z &lt;img src="%d" /&gt; NA &lt;img src="%d" /&gt;</string>
+    <string name="privacyProtectionUpgraded" tools:ignore="TypographyQuotes">ZDOKONALENÉ Z &lt;img src=\"%1$d\" /&gt; NA &lt;img src=\"%2$d\" /&gt;</string>
     <string name="privacyGradeContentDescription">Stupeň ochrany súkromia</string>
 
     <string name="httpsGood">Šifrované pripojenie</string>
@@ -101,25 +88,32 @@
     <string name="networksContentDescription">Siete sledovacích zariadení</string>
     <string name="networksOverview">Siete sledovacích zariadení zhrnú vašu webovú históriu do vášho dátového profilu. Veľké siete sledovacích zariadení sú nebezpečnejšie, pretože sa na vás môžu zamerať a sledovať vás na viacerých internetových stránkach.</string>
 
-    <plurals name="trackersFound">
-        <item quantity="one">Nájdené %s sledovacie zariadenie</item>
-        <item quantity="few">Nájdených %s sledovacích zariadení</item>
-        <item quantity="other">Nájdených %s sledovacích zariadení</item>
+    <plurals name="trackersFound" tools:ignore="UnusedQuantity">
+        <item quantity="one">Našlo sa %1$s sledovacie zariadenie</item>
+        <item quantity="few">Našli sa %1$s sledovacie zariadenia</item>
+        <item quantity="many">Našlo sa %1$s sledovacieho zariadenia</item>
+        <item quantity="other">Našlo sa %1$s sledovacích zariadení</item>
     </plurals>
 
-    <plurals name="trackerBlocked">
-        <item quantity="one">%s zablokované sledovacie zariadenie</item>
-        <item quantity="other">%s zablokovaných sledovacích zariadení</item>
+    <plurals name="trackerBlocked" tools:ignore="UnusedQuantity">
+        <item quantity="one">Zablokovalo sa %1$s sledovacie zariadenie</item>
+        <item quantity="few">Zablokovali sa %1$s sledovacie zariadenia</item>
+        <item quantity="many">Zablokovalo sa %1$s sledovacieho zariadenia</item>
+        <item quantity="other">Zablokovalo sa %1$s sledovacích zariadení</item>
     </plurals>
 
-    <plurals name="majorNetworksFound">
-        <item quantity="one">%s nájdená veľká sieť sledovacích zariadení</item>
-        <item quantity="other">%s nájdených veľkých sietí sledovacích zariadení</item>
+    <plurals name="majorNetworksFound" tools:ignore="UnusedQuantity">
+        <item quantity="one">Našla sa %1$s hlavná sieť sledovacích zariadení</item>
+        <item quantity="few">Našli sa %1$s hlavné siete sledovacích zariadení</item>
+        <item quantity="many">Našlo sa %1$s hlavnej siete sledovacích zariadení</item>
+        <item quantity="other">Našlo sa %1$s hlavných sietí sledovacích zariadení</item>
     </plurals>
 
-    <plurals name="majorNetworksBlocked">
-        <item quantity="one">%s zablokovaná veľká sieť sledovacích zariadení</item>
-        <item quantity="other">%s zablokovaných veľkých sietí sledovacích zariadení</item>
+    <plurals name="majorNetworksBlocked" tools:ignore="UnusedQuantity">
+        <item quantity="one">Zablokovala sa %1$s hlavná sieť sledovacích zariadení</item>
+        <item quantity="few">Zablokovali sa %1$s hlavné siete sledovacích zariadení</item>
+        <item quantity="many">Zablokovala sa %1$s hlavnej siete sledovacích zariadení</item>
+        <item quantity="other">Zablokovalo sa %1$s hlavných sietí sledovacích zariadení</item>
     </plurals>
 
     <string name="scorecardActivityTitle">Stupeň ochrany súkromia</string>
@@ -129,14 +123,13 @@
 
     <string name="privacyTermsActivityTitle">Spôsoby ochrany súkromia</string>
     <string name="practicesGood">Osvedčené spôsoby ochrany súkromia</string>
-    <string name="practicesMixed">Zmiešané spôsoby ochrany súkromia"</string>
-    <string name="practicesBad">"Nedostatočné spôsoby ochrany súkromia"</string>
+    <string name="practicesMixed">Zmiešané spôsoby ochrany súkromia</string>
+    <string name="practicesBad">Nedostatočné spôsoby ochrany súkromia</string>
     <string name="practicesUnknown">Neznáme spôsoby ochrany súkromia</string>
     <string name="practicesOverview">Spôsoby ochrany súkromia naznačujú mieru ochrany osobných údajov, ktoré zdieľate s webovými stránkami.</string>
     <string name="practicesTosdrLink">Spôsoby ochrany súkromia sú výsledkom <b><u>ToS;DR</u></b></string>
     <string name="practicesIconContentGood">Ikona osvedčených postupov</string>
     <string name="practicesIconContentBad">Ikona nedostatočných postupov</string>
-    <string name="privacyProtectionToggle">Ochrana súkromia</string>
 
     <string name="networkTrackerSummaryHeader">SLEDOVACIE SIETE S NAJVÄČŠÍMI PRIESTUPKAMI</string>
     <string name="networkTrackerSummaryNotReady">Naďalej zhromažďujeme údaje s cieľom zistiť, koľko sledovacích zariadení sme zablokovali.</string>
@@ -176,37 +169,49 @@
 
     <!-- About Activity -->
     <string name="aboutActivityTitle">O nás</string>
-    <string name="aboutHeading">Súkromie jednoducho.</string>
     <string name="aboutDescription">
-        V DuckDuckGo nastavujeme nový štandard dôvery online.\n\ DuckDuckGo, prehliadač s dôrazom na súkromie, ponúka všetky dôležité základné prvky ochrany súkromia na ochranu pri vyhľadávaní a prehliadaní webu, vrátane blokovania sledovacích zariadení, inteligentnejšieho šifrovania a súkromného vyhľadávania DuckDuckGo.\n\ Pri používaní internetu by sme predsa nemali mať zlý pocit a dopriať si zaslúžené online súkromie by nemalo byť o nič ťažšie ako jednoduché zatiahnutie rolety.</string>
+        V DuckDuckGo nastavujeme nový štandard dôvery online.\n\
+        DuckDuckGo, prehliadač s dôrazom na súkromie, ponúka všetky dôležité základné prvky ochrany súkromia na ochranu pri vyhľadávaní a prehliadaní webu, vrátane blokovania sledovacích zariadení, inteligentnejšieho šifrovania a súkromného vyhľadávania DuckDuckGo.\n\
+        Pri používaní internetu by sme predsa nemali mať zlý pocit a dopriať si zaslúžené online súkromie by nemalo byť o nič ťažšie ako jednoduché zatiahnutie rolety.</string>
     <string name="aboutMoreLink">Viac informácií na stránke duckduckgo.com/about</string>
     <string name="no_suggestions">Žiadne návrhy</string>
 
     <!-- Broken Site Activity -->
     <string name="brokenSiteReportBrokenSiteMenuItem">Nahlásiť nefunkčný web</string>
     <string name="brokenSiteHeading">Nahláste nefunkčný web</string>
-    <string name="brokenSiteModalDescription">Nahlasovanie nefunkčného webu je úplne anonymné a pomáha nám pri zdokonaľovaní aplikácie.</string>
-    <string name="brokenSiteUrlHint">Zadajte webovú adresu</string>
-    <string name="brokenSiteDomainLabel">Doména nefunkčného webu:</string>
-    <string name="brokenSiteMessageHint">Ktorý obsah alebo funkcie sú nefunkčné?</string>
-    <string name="brokenSiteSubmitButton">Odoslať spätnú väzbu</string>
     <string name="brokenSiteSubmitted">Ďakujeme! Spätná väzba bola odoslaná</string>
+    <string name="brokenSitesCategoriesTitle">Popíšte, čo sa stalo:</string>
+    <string name="brokenSitesCategoriesHint">Popíšte, čo sa stalo</string>
+    <string name="brokenSiteSubmitButton">Odoslať správu</string>
+    <string name="brokenSiteDescription">Odoslaním anonymného hlásenia o nefunkčnom webe nám pomôžete tieto problémy odstrániť a vylepšiť aplikáciu.</string>
+
+    <string name="brokenSiteCategoryImages">Obrázky sa nepodarilo načítať</string>
+    <string name="brokenSiteCategoryPaywall">Táto stránka ma požiadala o deaktiváciu</string>
+    <string name="brokenSiteCategoryComments">Komentáre nepodarilo načítať</string>
+    <string name="brokenSiteCategoryVideos">Video sa neprehráva</string>
+    <string name="brokenSiteCategoryLinks">Odkazy alebo tlačidlá nefungujú</string>
+    <string name="brokenSiteCategoryContent">Chýba obsah</string>
+    <string name="brokenSiteCategoryLogin">Nemôžem sa prihlásiť</string>
+    <string name="brokenSiteCategoryUnsupported">Prehliadač je nekompatibilný</string>
+    <string name="brokenSiteCategoryOther">Niečo iné</string>
 
     <!-- Bookmarks Activity -->
     <string name="bookmarksMenuTitle">Záložky</string>
     <string name="bookmarksActivityTitle">Záložky</string>
-    <string name="bookmarkDeleteConfirmMessage">Naozaj chcete odstrániť záložku &lt;b&gt;%s&lt;/b&gt;?</string>
-    <string name="bookmarkDeleteConfirmTitle">Potvrdiť</string>
+    <string name="bookmarkDeleteConfirmMessage">Naozaj chcete odstrániť záložku &lt;b&gt;%1$s&lt;/b&gt;?</string>
     <string name="bookmarkAddedFeedback">Záložka je pridaná</string>
     <string name="bookmarkTitleHint">Názov záložky</string>
     <string name="bookmarkUrlHint">Webová adresa záložky</string>
-    <string name="bookmarkSave">Uložiť</string>
     <string name="bookmarkTitleEdit">Upraviť záložku</string>
     <string name="noBookmarks">Zatiaľ neboli pridané žiadne záložky</string>
-    <string name="bookmarkOverflowContentDescription">Viac možností pre záložku %s</string>
+    <string name="bookmarkOverflowContentDescription">Viac možností pre záložku %1$s</string>
+    <string name="bookmarkEdited">Záložka pridaná</string>
+
+    <!-- Dialogs -->
+    <string name="dialogConfirmTitle">Potvrdiť</string>
+    <string name="dialogSave">Uložiť</string>
     <string name="delete">Vymazať</string>
     <string name="edit">Upraviť</string>
-    <string name="bookmarkEdited">Záložka pridaná</string>
 
     <!-- Widget -->
     <string name="searchWidgetTextHint">Vyhľadať v DuckDuckGo</string>
@@ -270,14 +275,14 @@
     <string name="privacyProtectionNotificationDefaultTitle">Chránime vaše súkromie</string>
     <string name="privacyProtectionNotificationReportTitle">Správa o ochrane vášho súkromia</string>
     <string name="privacyProtectionNotificationDefaultDescription">Používanie aplikácie DuckDuckGo chráni údaje blokovaním sledovacích zariadení a šifrovaním pripojení.</string>
-    <string name="privacyProtectionNotificationUpgadeDescription">Počas používania DuckDuckGo ste si údaje chránili zabezpečením %d nešifrovaných pripojení.</string>
-    <string name="privacyProtectionNotificationTrackerDescription">Počas používania DuckDuckGo ste si údaje chránili zablokovaním %d sledovacích zariadení.</string>
-    <string name="privacyProtectionNotificationBothDescription">Počas používania DuckDuckGo ste si údaje chránili zablokovaním %d sledovacích zariadení a zabezpečením %d nešifrovaných pripojení.</string>
+    <string name="privacyProtectionNotificationUpgadeDescription">Počas používania DuckDuckGo ste si údaje chránili zabezpečením %1$d nešifrovaných pripojení.</string>
+    <string name="privacyProtectionNotificationTrackerDescription">Počas používania DuckDuckGo ste si údaje chránili zablokovaním %1$d sledovacích zariadení.</string>
+    <string name="privacyProtectionNotificationBothDescription">Počas používania DuckDuckGo ste si údaje chránili zablokovaním %1$d sledovacích zariadení a zabezpečením %2$d nešifrovaných pripojení.</string>
     <string name="privacyProtectionNotificationLaunchButton">Pokračovať v prehliadaní</string>
-
+    
     <!-- Authentication -->
     <string name="authenticationDialogTitle">Prihlásiť sa</string>
-    <string name="authenticationDialogMessage">%s vyžaduje používateľské meno a heslo.</string>
+    <string name="authenticationDialogMessage">%1$s vyžaduje používateľské meno a heslo.</string>
     <string name="authenticationDialogPositiveButton">Prihlásiť sa</string>
     <string name="authenticationDialogNegativeButton">Zrušiť</string>
     <string name="authenticationDialogUsernameHint">Používateľské meno</string>
@@ -358,4 +363,117 @@
     <string name="feedbackInitialDisambiguationSadButtonContentDescription">Tlačidlo negatívnej spätnej väzby</string>
     <string name="feedbackIsImportantToUs">Anonymná spätná väzba je pre nás dôležitá.</string>
 
+    <!-- Webview Recovery -->
+    <string name="crashedWebViewErrorMessage">"Webovú stránku nebolo možné zobraziť."</string>
+    <string name="crashedWebViewErrorAction">"Znovu načítať"</string>
+
+    <!-- System Search-->
+    <string name="systemSearchDeviceAppLabel">Z tohto zariadenia</string>
+    <string name="systemSearchOmnibarInputHint"><font size="13">Vyhľadať alebo zadať webovú adresu</font></string>
+    <string name="systemSearchAppNotFound">Aplikáciu sa nepodarilo nájsť</string>
+    <string name="systemSearchOnboardingText">Ďakujeme, že ste si vybrali aplikáciu DuckDuckGo!\nPri použití nášho vyhľadávača alebo aplikácie je vaše vyhľadávanie chránené.</string>
+    <string name="systemSearchOnboardingFeaturesIntroText">Aplikácia DuckDuckGo tiež:</string>
+    <string name="systemSearchOnboardingFeatureOneText">Blokuje nebezpečné sledovanie</string>
+    <string name="systemSearchOnboardingFeatureTwoText">Vynucuje šifrovanie na webových stránkach</string>
+    <string name="systemSearchOnboardingFeatureThreeText">Odstraňuje údaje jediným kliknutím</string>
+    <string name="systemSearchOnboardingButtonMore">Zobraziť viac</string>
+    <string name="systemSearchOnboardingButtonLess">Skryť</string>
+    <string name="systemSearchOnboardingButtonOk">Mám to</string>
+
+    <!-- Dax Dialog -->
+    <string name="daxDialogHideButton">SKRYŤ</string>
+    <string name="daxDialogPhew">Uf!</string>
+    <string name="daxDialogNext">Ďalšie</string>
+    <string name="daxDialogHighFive">High Five!</string>
+    <string name="daxDialogGotIt">Mám to</string>
+    <string name="hideTipsTitle">Skryť zostávajúce tipy?</string>
+    <string name="hideTipsText">Je ich len niekoľko, snažili sme sa, aby mali informatívny charakter.</string>
+    <string name="hideTipsButton">Navždy skryť tipy</string>
+
+    <!-- New Onboarding Experience -->
+    <string name="onboardingWelcomeTitle">"Vitajte v aplikácii DuckDuckGo!"</string>
+    <string name="onboardingDaxText"><![CDATA[Internet môže byť dosť nevyspytateľný.<br/><br/>Nemajte žiadne obavy! Súkromné vyhľadávanie a prehliadanie je jednoduchšie, ako si myslíte.]]></string>
+    <string name="onboardingLetsDoItButton">Poďme na to!</string>
+    <string name="daxIntroCtaText"><![CDATA[Nabudúce skúste navštíviť jeden z vašich obľúbených serverov! <br/><br/>Zablokujeme sledovacie zariadenia, ktoré by vás mohli špehovať. V prípade potreby dokážeme tiež inovovať zabezpečenie vášho pripojenia. 🔒]]></string>
+    <string name="daxEndCtaText"><![CDATA[Hotovo! <br/><br/>Pamätajte: zakaždým, keď prehľadávate v našej aplikácii, divnej reklame pristrihávate krídla. 👍]]></string>
+    <string name="daxSerpCtaText">Vaše vyhľadávanie v aplikácii DuckDuckGo je anonymné. Nikdy nebudeme uchovávať vašu históriu vyhľadávania. Nikdy. 🙌</string>
+    <plurals name="daxTrackersBlockedCtaText" tools:ignore="UnusedQuantity">
+        <item quantity="one"><![CDATA[ a <b>%1$d ďalší</b> sa vás tu pokúsil sledovať. <br/><br/>Boli zablokovaní!<br/><br/> ☝️Môžete skontrolovať panel s adresou URL a zistiť, kto sa vás snaží sledovať, keď navštívite novú webovú stránku.️]]></item>
+        <item quantity="few"><![CDATA[ a <b>%1$d ďalší</b> sa vás tu pokúsili sledovať. <br/><br/>Boli zablokovaní!<br/><br/> ☝️Môžete skontrolovať panel s adresou URL a zistiť, kto sa vás snaží sledovať, keď navštívite novú webovú stránku.️]]></item>
+        <item quantity="many"><![CDATA[ a <b>%1$d ďalších</b> sa vás tu pokúsilo sledovať. <br/><br/>Boli zablokovaní!<br/><br/> ☝️Môžete skontrolovať panel s adresou URL a zistiť, kto sa vás snaží sledovať, keď navštívite novú webovú stránku.️]]></item>
+        <item quantity="other"><![CDATA[ a <b>%1$d ďalších</b> sa vás tu pokúsilo sledovať. <br/><br/>Boli zablokovaní!<br/><br/> ☝️Môžete skontrolovať panel s adresou URL a zistiť, kto sa vás snaží sledovať, keď navštívite novú webovú stránku.️]]></item>
+    </plurals>
+    <plurals name="daxTrackersBlockedCtaZeroText" tools:ignore="UnusedQuantity">
+        <item quantity="one"><![CDATA[ sa vás tu pokúsil sledovať. <br/><br/>Bolo to zablokované!<br/><br/> ☝️Môžete skontrolovať panel s adresou URL a zistiť, kto sa vás snaží sledovať, keď navštívite novú webovú stránku.️]]></item>
+        <item quantity="few"><![CDATA[ sa vás tu pokúsili sledovať. <br/><br/>Bolo to zablokované!<br/><br/> ☝️Môžete skontrolovať panel s adresou URL a zistiť, kto sa vás snaží sledovať, keď navštívite novú webovú stránku.️]]></item>
+        <item quantity="many"><![CDATA[ sa vás tu pokúsilo sledovať. <br/><br/>Bolo to zablokované!<br/><br/> ☝️Môžete skontrolovať panel s adresou URL a zistiť, kto sa vás snaží sledovať, keď navštívite novú webovú stránku.️]]></item>
+        <item quantity="other"><![CDATA[ sa vás tu pokúsilo sledovať. <br/><br/>Bolo to zablokované!<br/><br/> ☝️Môžete skontrolovať panel s adresou URL a zistiť, kto sa vás snaží sledovať, keď navštívite novú webovú stránku.️]]></item>
+    </plurals>
+    <string name="daxNonSerpCtaText"><![CDATA[Počas toho, ako budeš ťukať a posúvať, zablokujem nepríjemné sledovacie zariadenia. <br/><br/>Neprestávaj - pokračuj v prehľadávaní!]]></string>
+    <string name="daxMainNetworkCtaText"><![CDATA[Hlavu hore! %1$s je hlavná sledovacia sieť.<br/><br/> Ich sledovatelia číhajú na %2$s najobľúbenejších weboch 😱, ale nemaj strach! <br/><br/>Zablokujem %3$s, aby niekto pozoroval tvoje aktivity na týchto stránkach.]]></string>
+    <string name="daxMainNetworkOwnedCtaText">Hlavu hore! Keďže %1$s vlastní %2$s, nemôžem im zabrániť v tom, aby videli vašu aktivitu.&lt;br/&gt;&lt;br/&gt;Prehliadajte so mnou a môžem obmedziť to, čo o vás %3$s celkovo vie, zablokovaním ich sledovacích zariadení na mnohých ďalších stránkach.</string>
+
+    <!-- Download Confirmation -->
+    <string name="downloadConfirmationContinue">Ďalej</string>
+    <string name="downloadConfirmationSaveFileTitle">Ušetrite %1$s</string>
+    <string name="downloadConfirmationKeepBothFilesText">Nechať si oboje</string>
+    <string name="downloadConfirmationReplaceOldFileText">Vymeniť</string>
+    <string name="downloadConfirmationOpenFileText">Otvorené</string>
+    <string name="downloadConfirmationUnableToOpenFileText">Súbor sa nepodarilo otvoriť</string>
+    <string name="downloadConfirmationUnableToDeleteFileText">Starý súbor sa nepodarilo odstrániť</string>
+
+    <!-- Change Icon Activity -->
+    <string name="changeIconActivityTitle">Ikona aplikácie</string>
+    <string name="changeIconCtaLabel">Zmeniť ikonu aplikácie</string>
+    <string name="changeIconCtaAccept">Použiť</string>
+    <string name="changeIconCtaCancel">Zrušiť</string>
+    <string name="changeIconDialogTitle">Použiť novú ikonu?</string>
+    <string name="changeIconDialogMessage">Pri použití zmien sa aplikácia môže zavrieť. Po nadšení zo svojej novej peknej ikony sa vráťte späť.</string>
+
+    <!-- New dashboard / menu buttons -->
+    <string name="manageWhitelist">Nezabezpečené webové stránky</string>
+    <string name="reportBrokenSite">Nahlásiť nefunkčnú stránku</string>
+
+    <!-- Dialogs -->
+    <string name="dialogAddTitle">Pridať</string>
+    <string name="dialogEditTitle">Editovať</string>
+
+    <!-- Whitelist -->
+    <string name="whitelisetActivityTitle">Nezabezpečené webové stránky</string>
+    <string name="enablePrivacyProtection">Povoliť ochranu súkromia</string>
+    <string name="disablePrivacyProtection">Vypnúť ochranu súkromia</string>
+    <string name="whitelistEntryOverflowContentDescription">Viac možností pre nezabezpečené webové stránky %1$s</string>
+    <string name="whitelistEntryDeleteConfirmMessage">Naozaj chcete odstrániť &lt;b&gt;%1$s&lt;/b&gt; z nezabezpečených webových stránok?</string>
+    <string name="whitelistExplanation">Tieto webové stránky nebudú rozšírené o ochranu súkromia.</string>
+    <string name="whitelistNoEntries">Zatiaľ neexistujú žiadne nezabezpečené webové stránky</string>
+    <string name="whitelistDomainHint">www.example.com</string>
+    <string name="whitelistFormatError">Nepodarilo sa uložiť, zadajte doménu ako <b>example.com</b></string>
+
+    <!-- Settings -->
+    <string name="settingsPrivacyProtectionWhitelist">Nezabezpečené webové stránky</string>
+
+    <!-- Fireproof websites -->
+    <string name="fireproofWebsitesActivityTitle">Zabezpečené webové stránky</string>
+    <string name="settingsFireproofWebsites">Zabezpečené webové stránky</string>
+    <string name="fireproofWebsiteMenuTitleAdd">Zabezpečiť webovú stránku</string>
+    <string name="fireproofWebsiteSnackbarConfirmation">&lt;b&gt;%1$s&lt;/b&gt; je teraz zabezpečená! Viac informácií nájdete na stránke Nastavenia.</string>
+    <string name="fireproofWebsiteSnackbarAction">Vrátenie späť</string>
+    <string name="fireproofWebsiteDeleteConfirmMessage">Naozaj chcete odstrániť &lt;b&gt;%1$s&lt;/b&gt;?</string>
+    <string name="fireproofWebsiteEmptyListHint">Zatiaľ nie sú k dispozícii žiadne webové stránky</string>
+    <string name="fireproofWebsiteFeatureDescription">Webové stránky sa spoliehajú na súbory cookie, aby ste zostali prihlásení. Keď webovú stránku zabezpečíte funkciou ohňovzdornosti, súbory cookie nebudú zmazané a zostanete prihlásení aj po použití tlačidla Oheň. Stále budeme blokovať sledovacie zariadenia tretích strán, ktoré sa nachádzajú na webových stránkach zabezpečených funkciou ohňovzdornosti.</string>
+    <string name="fireproofWebsiteOverflowContentDescription">Ďalšie možnosti pre zabezpečenú webovú stránku %1$s</string>
+    <string name="fireproofWebsiteLoginDialogTitle">Chceli by ste webovú stránku zabezpečiť funkciou ohňovzdornosti %1$s?</string>
+    <string name="fireproofWebsiteLoginDialogDescription">Zabezpečenie tejto webovej stránky funkciou ohňovzdornosti zaistí, aby ste zostali prihlásení aj po použití tlačidla Oheň.</string>
+    <string name="fireproofWebsiteLoginDialogPositive">Zabezpečiť funkciou ohňovzdornosti</string>
+    <string name="fireproofWebsiteLoginDialogNegative">Teraz nie</string>
+    <string name="fireproofWebsiteItemsSectionTitle">Webové stránky</string>
+    <string name="fireproofWebsiteToogleText">Opýtať sa pri prihlásení</string>
+
+    <!-- Dos Attack error-->
+    <string name="dosErrorMessage">Spojenie bolo prerušené. Táto webová stránka môže byť pre vaše zariadenie škodlivá.</string>
+
+    <!-- Download Manager problems -->
+    <string name="downloadManagerDisabled">Správca sťahovania je zakázaný</string>
+    <string name="downloadManagerIncompatible">Správca sťahovania nie je na tomto zariadení k dispozícií</string>
+    <string name="enable">Povoliť</string>
 </resources>

@@ -23,6 +23,8 @@ import android.webkit.*
 import androidx.annotation.RequiresApi
 import androidx.annotation.UiThread
 import androidx.annotation.WorkerThread
+import com.duckduckgo.app.browser.logindetection.DOMLoginDetector
+import com.duckduckgo.app.browser.logindetection.WebNavigationEvent
 import com.duckduckgo.app.browser.model.BasicAuthenticationRequest
 import com.duckduckgo.app.browser.navigation.safeCopyBackForwardList
 import com.duckduckgo.app.global.exception.UncaughtExceptionRepository
@@ -32,14 +34,15 @@ import kotlinx.coroutines.*
 import timber.log.Timber
 import java.net.URI
 
-
 class BrowserWebViewClient(
     private val requestRewriter: RequestRewriter,
     private val specialUrlDetector: SpecialUrlDetector,
     private val requestInterceptor: RequestInterceptor,
     private val offlinePixelCountDataStore: OfflinePixelCountDataStore,
     private val uncaughtExceptionRepository: UncaughtExceptionRepository,
-    private val cookieManager: CookieManager
+    private val cookieManager: CookieManager,
+    private val loginDetector: DOMLoginDetector,
+    private val dosDetector: DosDetector
 ) : WebViewClient() {
 
     var webViewClientListener: WebViewClientListener? = null
@@ -50,7 +53,7 @@ class BrowserWebViewClient(
      */
     override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
         val url = request.url
-        return shouldOverride(view, url)
+        return shouldOverride(view, url, request.isForMainFrame)
     }
 
     /**
@@ -59,15 +62,21 @@ class BrowserWebViewClient(
     @Suppress("OverridingDeprecatedMember")
     override fun shouldOverrideUrlLoading(view: WebView, urlString: String): Boolean {
         val url = Uri.parse(urlString)
-        return shouldOverride(view, url)
+        return shouldOverride(view, url, true)
     }
 
     /**
      * API-agnostic implementation of deciding whether to override url or not
      */
-    private fun shouldOverride(webView: WebView, url: Uri): Boolean {
+    private fun shouldOverride(webView: WebView, url: Uri, isForMainFrame: Boolean): Boolean {
+
+        Timber.v("shouldOverride $url")
         try {
-            Timber.v("shouldOverride $url")
+            if (isForMainFrame && dosDetector.isUrlGeneratingDos(url)) {
+                webView.loadUrl("about:blank")
+                webViewClientListener?.dosAttackDetected()
+                return false
+            }
 
             return when (val urlType = specialUrlDetector.determineType(url)) {
                 is SpecialUrlDetector.UrlType.Email -> {
@@ -118,12 +127,14 @@ class BrowserWebViewClient(
     @UiThread
     override fun onPageStarted(webView: WebView, url: String?, favicon: Bitmap?) {
         try {
+            Timber.v("onPageStarted webViewUrl: ${webView.url} URL: $url")
             val navigationList = webView.safeCopyBackForwardList() ?: return
             webViewClientListener?.navigationStateChanged(WebViewNavigationState(navigationList))
             if (url != null && url == lastPageStarted) {
                 webViewClientListener?.pageRefreshed(url)
             }
             lastPageStarted = url
+            loginDetector.onEvent(WebNavigationEvent.OnPageStarted(webView))
         } catch (e: Throwable) {
             GlobalScope.launch {
                 uncaughtExceptionRepository.recordUncaughtException(e, ON_PAGE_STARTED)
@@ -135,6 +146,7 @@ class BrowserWebViewClient(
     @UiThread
     override fun onPageFinished(webView: WebView, url: String?) {
         try {
+            Timber.v("onPageFinished webViewUrl: ${webView.url} URL: $url")
             val navigationList = webView.safeCopyBackForwardList() ?: return
             webViewClientListener?.navigationStateChanged(WebViewNavigationState(navigationList))
             flushCookies()
@@ -157,7 +169,10 @@ class BrowserWebViewClient(
         return runBlocking {
             try {
                 val documentUrl = withContext(Dispatchers.Main) { webView.url }
-                Timber.v("Intercepting resource ${request.url} on page $documentUrl")
+                withContext(Dispatchers.Main) {
+                    loginDetector.onEvent(WebNavigationEvent.ShouldInterceptRequest(webView, request))
+                }
+                Timber.v("Intercepting resource ${request.url} type:${request.method} on page $documentUrl")
                 requestInterceptor.shouldIntercept(request, webView, documentUrl, webViewClientListener)
             } catch (e: Throwable) {
                 uncaughtExceptionRepository.recordUncaughtException(e, SHOULD_INTERCEPT_REQUEST)

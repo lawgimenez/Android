@@ -17,9 +17,9 @@
 package com.duckduckgo.app.global
 
 import android.net.Uri
+import androidx.core.net.toUri
 import org.junit.Assert.*
 import org.junit.Test
-
 
 class UriExtensionTest {
 
@@ -188,5 +188,40 @@ class UriExtensionTest {
     fun whenConvertingDesktopSiteToDesktopSiteThenUrlUnchanged() {
         val converted = Uri.parse("https://example.com").toDesktopUri()
         assertEquals("https://example.com", converted.toString())
+    }
+
+    @Test
+    fun whenGettingAbsoluteStringThenDoNotReturnQueryParameters() {
+        val absoluteString = Uri.parse("https://example.com/test?q=example/#1/anotherrandomcode").absoluteString
+        assertEquals("https://example.com/test", absoluteString)
+    }
+
+    @Test
+    fun whenNullUrlThenNullFaviconUrl() {
+        assertNull("".toUri().faviconLocation())
+    }
+
+    @Test
+    fun whenHttpRequestThenFaviconLocationAlsoHttp() {
+        val favicon = "http://example.com".toUri().faviconLocation()
+        assertTrue(favicon!!.isHttp)
+    }
+
+    @Test
+    fun whenHttpsRequestThenFaviconLocationAlsoHttps() {
+        val favicon = "https://example.com".toUri().faviconLocation()
+        assertTrue(favicon!!.isHttps)
+    }
+
+    @Test
+    fun whenUrlContainsASubdomainThenSubdomainReturnedInFavicon() {
+        val favicon = "https://sub.example.com".toUri().faviconLocation()
+        assertEquals("https://sub.example.com/favicon.ico", favicon.toString())
+    }
+
+    @Test
+    fun whenUrlIsIpAddressThenIpReturnedInFaviconUrl() {
+        val favicon = "https://192.168.1.0".toUri().faviconLocation()
+        assertEquals("https://192.168.1.0/favicon.ico", favicon.toString())
     }
 }

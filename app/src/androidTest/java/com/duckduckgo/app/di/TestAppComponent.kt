@@ -34,7 +34,6 @@ import retrofit2.Retrofit
 import javax.inject.Named
 import javax.inject.Singleton
 
-
 @Singleton
 @Component(
     modules = [
@@ -69,7 +68,8 @@ import javax.inject.Singleton
         AppUsageModule::class,
         FileModule::class,
         UncaughtExceptionModule::class,
-        PlayStoreReferralModule::class
+        PlayStoreReferralModule::class,
+        CoroutinesModule::class
     ]
 )
 interface TestAppComponent : AppComponent {

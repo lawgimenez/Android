@@ -260,7 +260,6 @@ class WebViewRequestInterceptorTest {
         assertRequestCanContinueToLoad(response)
     }
 
-
     @Test
     fun whenRequestShouldBlockAndNoSurrogateThenCancellingResponseReturned() = runBlocking<Unit> {
         whenever(mockResourceSurrogates.get(any())).thenReturn(SurrogateResponse(responseAvailable = false))
@@ -296,6 +295,42 @@ class WebViewRequestInterceptorTest {
         )
 
         assertEquals(availableSurrogate.jsFunction.byteInputStream().read(), response!!.data.read())
+    }
+
+    @Test
+    fun whenRequestShouldBlockButThereIsASurrogateThenCallSurrogateDetected() = runBlocking<Unit> {
+        val availableSurrogate = SurrogateResponse(
+            responseAvailable = true,
+            mimeType = "application/javascript",
+            jsFunction = "javascript replacement function goes here"
+        )
+        val mockWebViewClientListener: WebViewClientListener = mock()
+        whenever(mockResourceSurrogates.get(any())).thenReturn(availableSurrogate)
+
+        configureShouldNotUpgrade()
+        configureShouldBlock()
+        testee.shouldIntercept(
+            request = mockRequest,
+            documentUrl = "foo.com",
+            webView = webView,
+            webViewClientListener = mockWebViewClientListener
+        )
+
+        verify(mockWebViewClientListener).surrogateDetected(availableSurrogate)
+    }
+
+    @Test
+    fun whenUrlShouldBeUpgradedThenNotifyWebViewClientListener() = runBlocking<Unit> {
+        configureShouldUpgrade()
+        val mockWebViewClientListener: WebViewClientListener = mock()
+        testee.shouldIntercept(
+            request = mockRequest,
+            documentUrl = null,
+            webView = webView,
+            webViewClientListener = mockWebViewClientListener
+        )
+
+        verify(mockWebViewClientListener).upgradedToHttps()
     }
 
     private fun assertRequestCanContinueToLoad(response: WebResourceResponse?) {

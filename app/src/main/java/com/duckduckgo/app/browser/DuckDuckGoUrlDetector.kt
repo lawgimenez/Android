@@ -21,7 +21,6 @@ import com.duckduckgo.app.global.AppUrl
 import com.duckduckgo.app.global.AppUrl.ParamKey
 import javax.inject.Inject
 
-
 class DuckDuckGoUrlDetector @Inject constructor() {
 
     fun isDuckDuckGoUrl(uri: String): Boolean {
@@ -39,6 +38,19 @@ class DuckDuckGoUrlDetector @Inject constructor() {
     fun extractQuery(uriString: String): String? {
         val uri = uriString.toUri()
         return uri.getQueryParameter(ParamKey.QUERY)
+    }
+
+    fun isDuckDuckGoVerticalUrl(uri: String): Boolean {
+        return isDuckDuckGoUrl(uri) && hasVertical(uri)
+    }
+
+    private fun hasVertical(uri: String): Boolean {
+        return uri.toUri().queryParameterNames.contains(ParamKey.VERTICAL)
+    }
+
+    fun extractVertical(uriString: String): String? {
+        val uri = uriString.toUri()
+        return uri.getQueryParameter(ParamKey.VERTICAL)
     }
 
     private fun String.toUri(): Uri {

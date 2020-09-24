@@ -16,13 +16,13 @@
 
 package com.duckduckgo.app.global
 
-
 class AppUrl {
 
     object Url {
         const val HOST = "duckduckgo.com"
         const val API = "https://$HOST"
         const val HOME = "https://$HOST"
+        const val COOKIES = "https://$HOST"
         const val ABOUT = "https://$HOST/about"
         const val TOSDR = "https://tosdr.org"
         const val PIXEL = "https://improving.duckduckgo.com"
@@ -36,10 +36,14 @@ class AppUrl {
         const val DEV_MODE = "test"
         const val LANGUAGE = "lg"
         const val COUNTRY = "co"
+        const val HIDE_SERP = "ko"
+        const val VERTICAL = "ia"
+        const val VERTICAL_REWRITE = "iar"
     }
 
     object ParamValue {
         const val SOURCE = "ddg_android"
         const val SOURCE_EU_AUCTION = "ddg_androideu"
+        const val HIDE_SERP = "-1"
     }
 }

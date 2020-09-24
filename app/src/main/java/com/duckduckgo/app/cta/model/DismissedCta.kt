@@ -20,18 +20,19 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
 
-
 enum class CtaId {
     SURVEY,
     ADD_WIDGET,
     DAX_INTRO,
+    DAX_FIRE_BUTTON,
     DAX_DIALOG_SERP,
-    DAX_DIALOG_DEFAULT_BROWSER,
-    DAX_DIALOG_SEARCH_WIDGET,
     DAX_DIALOG_TRACKERS_FOUND,
     DAX_DIALOG_NETWORK,
     DAX_DIALOG_OTHER,
-    DAX_END
+    DAX_END,
+    USE_OUR_APP,
+    USE_OUR_APP_DELETION,
+    UNKNOWN
 }
 
 @Entity(
@@ -46,7 +47,11 @@ data class DismissedCta(
 
         @TypeConverter
         fun toId(value: String): CtaId {
-            return CtaId.valueOf(value)
+            return try {
+                CtaId.valueOf(value)
+            } catch (ex: IllegalArgumentException) {
+                CtaId.UNKNOWN
+            }
         }
 
         @TypeConverter
@@ -55,4 +60,3 @@ data class DismissedCta(
         }
     }
 }
-

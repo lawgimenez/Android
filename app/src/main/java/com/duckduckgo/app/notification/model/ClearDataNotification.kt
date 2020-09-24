@@ -17,6 +17,7 @@
 package com.duckduckgo.app.notification.model
 
 import android.content.Context
+import android.os.Bundle
 import com.duckduckgo.app.browser.R
 import com.duckduckgo.app.notification.NotificationHandlerService.NotificationEvent.CANCEL
 import com.duckduckgo.app.notification.NotificationHandlerService.NotificationEvent.CLEAR_DATA_LAUNCH
@@ -64,5 +65,9 @@ class ClearDataSpecification(context: Context) : NotificationSpec {
     override val title: String = context.getString(R.string.clearNotificationTitle)
     override val description: String = context.getString(R.string.clearNotificationDescription)
     override val launchButton: String? = null
+    override val closeButton: String? = null
     override val pixelSuffix = "cd"
+    override val autoCancel = true
+    override val bundle: Bundle = Bundle()
+    override val color: Int = R.color.cornflowerBlue
 }

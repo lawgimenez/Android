@@ -48,6 +48,9 @@ class NotificationRegistrar @Inject constructor(
     object NotificationId {
         const val ClearData = 100
         const val PrivacyProtection = 101
+        const val Article = 103 // 102 was used for the search notification hence using 103 moving forward
+        const val AppFeature = 104
+        const val UseOurApp = 105
     }
 
     object ChannelType {
@@ -96,6 +99,7 @@ class NotificationRegistrar @Inject constructor(
             SDK_INT >= O -> manager.notificationChannels.all { it.importance != IMPORTANCE_NONE }
             else -> true
         }
+
         updateStatus(systemEnabled && allChannelsEnabled)
     }
 

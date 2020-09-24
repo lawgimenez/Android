@@ -15,48 +15,40 @@
   -->
 
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
-    <string name="crashedWebViewErrorMessage">"The webpage could not be displayed."</string>
-    <string name="crashedWebViewErrorAction">"Reload"</string>
+    <!--Fire button education-->
+    <string name="daxClearDataCtaText">Now tap below to burn your browsing history. Give it a try! &#128071;</string>
 
-    <!-- System Search-->
-    <string name="systemSearchDeviceAppLabel">From this device</string>
-    <string name="systemSearchAppNotFound">Application could not be found</string>
+    <!-- Use Our App Flow -->
+    <string name="useOurAppDialogText">Did you know the Facebook app can make requests for data even when you\'re not using it?&lt;br/&gt;&lt;br/&gt;Replace the app with a home screen shortcut that opens Facebook in DuckDuckGo. Then delete the Facebook app.</string>
+    <string name="useOurAppDialogButtonText">Add Facebook Shortcut</string>
+    <string name="useOurAppDialogCancelButtonText">Not Now</string>
+    <string name="useOurAppNotificationTitle">Worried about Facebook tracking you?</string>
+    <string name="useOurAppNotificationDescription">Here\'s a simple way to reduce its reach.</string>
+    <string name="useOurAppShortcutAddedText">Success! %s has been added to your home screen.</string>
+    <string name="useOurAppDeletionDialogText">Checking your feed in DuckDuckGo is a great alternative to using the Facebook app!&lt;br/&gt;&lt;br/&gt;But if the Facebook app is on your phone, it can make requests for data even when you\'re not using it.&lt;br/&gt;&lt;br/&gt;Prevent this by deleting it now!</string>
 
-    <!-- New Onboarding Experience -->
-    <string name="onboardingWelcomeTitle">"Welcome to DuckDuckGo!"</string>
-    <string name="onboardingDaxText"><![CDATA[The Internet can be kinda creepy.<br/><br/>Not to worry! Searching and browsing privately is easier than you think.]]></string>
-    <string name="onboardingLetsDoItButton">Let\'s Do It!</string>
-    <string name="daxIntroCtaText"><![CDATA[Next, try visiting one of your favorite sites!<br/><br/>I\'ll block trackers so they can\'t spy on you. I\'ll also upgrade the security of your connection if possible. 🔒]]></string>
-    <string name="daxEndCtaText"><![CDATA[You\'ve got this!<br/><br/>Remember: every time you browse with me a creepy ad loses its wings. 👍]]></string>
-    <string name="daxSerpCtaText">Your DuckDuckGo searches are anonymous and I never store your search history. Ever. 🙌</string>
-    <string name="daxDefaultBrowserCtaText"><![CDATA[Before I duck out!<br/><br/>Want tracker protection when you open links from other apps?<br/><br/>Make DuckDuckGo Your Default Browser!]]></string>
-    <string name="daxSearchWidgetCtaText"><![CDATA[You\'re on a roll!<br/><br/>Search privately even faster! Add the DuckDuckGo search widget to your home screen.]]></string>
-    <string name="daxNonSerpCtaText"><![CDATA[Every site has a privacy grade. Tap it to see how I protected your privacy.<br/><br/>Want to get fancy? Try clearing your data by hitting the fire button.]]></string>
-    <string name="daxMainNetworkStep1CtaText"><![CDATA[Heads up!<br/><br/> %s runs a major tracking network.<br/><br/>A low privacy grade will tip you off to sites like this.]]></string>
-    <string name="daxMainNetworkStep1OwnedCtaText"><![CDATA[Heads up!<br/><br/> %s is owned by %s, which runs a major tracking network.]]></string>
-    <string name="daxMainNetworkStep21CtaText"><![CDATA[In fact, %s trackers lurk on about %s of top sites. 😱<br/><br/>]]></string>
-    <string name="daxMainNetworkStep211CtaText"><![CDATA[In fact, %s trackers lurk all over the internet. 😱<br/><br/>]]></string>
-    <string name="daxMainNetworkStep2CtaText">%sI\'ll block these trackers when you\'re browsing non-%s sites.</string>
-
-    <plurals name="daxTrackersBlockedCtaText">
-        <item quantity="one"><![CDATA[&#160;and <b>%d other</b> were trying to track you here. <br/><br/>I blocked them!<br/><br/> ☝️You can check the URL bar to see who is trying to track you when you visit a new site.️]]></item>
-        <item quantity="other"><![CDATA[&#160;and <b>%d others</b> were trying to track you here. <br/><br/>I blocked them!<br/><br/> ☝️You can check the URL bar to see who is trying to track you when you visit a new site.️]]></item>
-    </plurals>
-    <string name="daxTrackersBlockedCtaZeroText"><![CDATA[&#160;was trying to track you here. <br/><br/>I blocked it!<br/><br/> ☝️You can check the URL bar to see who is trying to track you when you visit a new site.️]]></string>
-
-    <!-- Dax Dialog -->
-    <string name="daxDialogHideButton">HIDE</string>
-    <string name="daxDialogPhew">Phew!</string>
-    <string name="daxDialogYes">OK!</string>
-    <string name="daxDialogAddWidget">Add Widget</string>
-    <string name="daxDialogMaybeLater">Maybe Later</string>
-    <string name="daxDialogSettings">Go to settings</string>
-    <string name="daxDialogNext">Next</string>
-    <string name="daxDialogHighFive">High Five!</string>
-    <string name="daxDialogGotIt">Got It</string>
-
-    <string name="hideTipsTitle">Hide remaining tips?</string>
-    <string name="hideTipsText">There are only a few, and we tried to make them informative.</string>
-    <string name="hideTipsButton">Hide tips forever</string>
+    <!-- Precise Location -->
+    <string name="preciseLocationSystemDialogTitle">Enable device location for DuckDuckGo Privacy Browser?</string>
+    <string name="preciseLocationSystemDialogSubtitle">%s is requesting your device location. You\'ll first need to allow the app to send your device location, then %s can ask permission.</string>
+    <string name="preciseLocationSystemDialogAllow">Enable</string>
+    <string name="preciseLocationSystemDialogDeny">Maybe Later</string>
+    <string name="preciseLocationSystemDialogNeverAllow">Don\'t Ask Again for this Site</string>
+    <string name="preciseLocationSiteDialogTitle">Grant %s permission to access location?</string>
+    <string name="preciseLocationSiteDialogSubtitle">You can manage the location access permissions you’ve granted to individual sites in Settings.</string>
+    <string name="preciseLocationSiteDialogAllowAlways">Always</string>
+    <string name="preciseLocationSiteDialogAllowOnce">Only for this session</string>
+    <string name="preciseLocationSiteDialogDenyAlways">Deny always</string>
+    <string name="preciseLocationSiteDialogDenyOnce">Deny for this session</string>
+    <string name="settingsPreciseLocation">Location</string>
+    <string name="preciseLocationFeatureDescription">Sites you visit may ask to know your device location. They won\'t be able to access it until you explicitly grant permission. DuckDuckGo only uses your location anonymously to deliver local search results.</string>
+    <string name="preciseLocationToggleText">Sites can ask for my location</string>
+    <string name="preciseLocationEmptyListHint">No websites granted permission to access location</string>
+    <string name="preciseLocationNoSystemPermission">To manage the location access permissions you\’ve granted to individual sites, enable location for this app in Android Settings.</string>
+    <string name="preciseLocationActivityTitle">Location</string>
+    <string name="preciseLocationDeleteConfirmMessage">Are you sure you want to delete &lt;b>%s&lt;/b>?</string>
+    <string name="preciseLocationDeleteContentDescription">More options for location permissions in domain %s</string>
+    <string name="preciseLocationAllowedSitesSectionTitle">Granted</string>
+    <string name="preciseLocationDeniedSitesSectionTitle">Denied</string>
+    <string name="preciseLocationSnackbarMessage">You previously granted %s permission to access your device location.</string>
 
 </resources>

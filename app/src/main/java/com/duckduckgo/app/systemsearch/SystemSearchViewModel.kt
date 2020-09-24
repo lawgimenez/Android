@@ -24,145 +24,221 @@ import com.duckduckgo.app.autocomplete.api.AutoComplete.AutoCompleteResult
 import com.duckduckgo.app.global.DefaultDispatcherProvider
 import com.duckduckgo.app.global.DispatcherProvider
 import com.duckduckgo.app.global.SingleLiveEvent
+import com.duckduckgo.app.onboarding.store.AppStage
+import com.duckduckgo.app.onboarding.store.UserStageStore
+import com.duckduckgo.app.onboarding.store.isNewUser
+import com.duckduckgo.app.statistics.pixels.Pixel
+import com.duckduckgo.app.statistics.pixels.Pixel.PixelName.*
 import com.jakewharton.rxrelay2.PublishRelay
+import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import io.reactivex.functions.BiFunction
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
+data class SystemSearchResult(val autocomplete: AutoCompleteResult, val deviceApps: List<DeviceApp>)
+
 class SystemSearchViewModel(
+    private var userStageStore: UserStageStore,
     private val autoComplete: AutoComplete,
     private val deviceAppLookup: DeviceAppLookup,
+    private val pixel: Pixel,
     private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) : ViewModel() {
 
-    data class SystemSearchViewState(
-        val queryText: String = "",
+    data class OnboardingViewState(
+        val visible: Boolean,
+        val expanded: Boolean = false
+    )
+
+    data class SystemSearchResultsViewState(
         val autocompleteResults: AutoCompleteResult = AutoCompleteResult("", emptyList()),
         val appResults: List<DeviceApp> = emptyList()
     )
 
     sealed class Command {
+        object ClearInputText : Command()
         object LaunchDuckDuckGo : Command()
         data class LaunchBrowser(val query: String) : Command()
         data class LaunchDeviceApplication(val deviceApp: DeviceApp) : Command()
         data class ShowAppNotFoundMessage(val appName: String) : Command()
+        object DismissKeyboard : Command()
+        data class EditQuery(val query: String) : Command()
     }
 
-    val viewState: MutableLiveData<SystemSearchViewState> = MutableLiveData()
+    val onboardingViewState: MutableLiveData<OnboardingViewState> = MutableLiveData()
+    val resultsViewState: MutableLiveData<SystemSearchResultsViewState> = MutableLiveData()
     val command: SingleLiveEvent<Command> = SingleLiveEvent()
 
-    private val autoCompletePublishSubject = PublishRelay.create<String>()
-    private var autocompleteResults: AutoCompleteResult = AutoCompleteResult("", emptyList())
-    private var autoCompleteDisposable: Disposable? = null
+    private val resultsPublishSubject = PublishRelay.create<String>()
+    private var results = SystemSearchResult(AutoCompleteResult("", emptyList()), emptyList())
+    private var resultsDisposable: Disposable? = null
 
     private var appsJob: Job? = null
-    private var appResults: List<DeviceApp> = emptyList()
 
     init {
-        resetState()
-        configureAutoComplete()
+        resetViewState()
+        configureResults()
+        refreshAppList()
     }
 
-    private fun currentViewState(): SystemSearchViewState = viewState.value!!
+    private fun currentOnboardingState(): OnboardingViewState = onboardingViewState.value!!
+    private fun currentResultsState(): SystemSearchResultsViewState = resultsViewState.value!!
 
-    fun resetState() {
-        autocompleteResults = AutoCompleteResult("", emptyList())
+    fun resetViewState() {
+        command.value = Command.ClearInputText
+        viewModelScope.launch {
+            resetOnboardingState()
+        }
+        resetResultsState()
+    }
+
+    private suspend fun resetOnboardingState() {
+        val showOnboarding = userStageStore.isNewUser()
+        onboardingViewState.value = OnboardingViewState(visible = showOnboarding)
+        if (showOnboarding) {
+            pixel.fire(INTERSTITIAL_ONBOARDING_SHOWN)
+        }
+    }
+
+    private fun resetResultsState() {
+        results = SystemSearchResult(AutoCompleteResult("", emptyList()), emptyList())
         appsJob?.cancel()
-        appResults = emptyList()
-        viewState.value = SystemSearchViewState()
+        resultsViewState.value = SystemSearchResultsViewState()
     }
 
-    private fun configureAutoComplete() {
-        autoCompleteDisposable = autoCompletePublishSubject
+    private fun configureResults() {
+        resultsDisposable = resultsPublishSubject
             .debounce(DEBOUNCE_TIME_MS, TimeUnit.MILLISECONDS)
-            .switchMap { autoComplete.autoComplete(it) }
+            .switchMap { buildResultsObservable(query = it) }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ result ->
-                updateAutocompleteResult(result)
+                updateResults(result)
             }, { t: Throwable? -> Timber.w(t, "Failed to get search results") })
     }
 
-    fun userUpdatedQuery(query: String) {
+    private fun buildResultsObservable(query: String): Observable<SystemSearchResult>? {
+        return Observable.zip(
+            autoComplete.autoComplete(query),
+            Observable.just(deviceAppLookup.query(query)),
+            BiFunction<AutoCompleteResult, List<DeviceApp>, SystemSearchResult> { autocompleteResult: AutoCompleteResult, appsResult: List<DeviceApp> ->
+                SystemSearchResult(autocompleteResult, appsResult)
+            }
+        )
+    }
 
+    fun userTappedOnboardingToggle() {
+        onboardingViewState.value = currentOnboardingState().copy(expanded = !currentOnboardingState().expanded)
+        if (currentOnboardingState().expanded) {
+            pixel.fire(INTERSTITIAL_ONBOARDING_MORE_PRESSED)
+            command.value = Command.DismissKeyboard
+        } else {
+            pixel.fire(INTERSTITIAL_ONBOARDING_LESS_PRESSED)
+        }
+    }
+
+    fun userDismissedOnboarding() {
+        viewModelScope.launch {
+            onboardingViewState.value = currentOnboardingState().copy(visible = false)
+            userStageStore.stageCompleted(AppStage.NEW)
+            pixel.fire(INTERSTITIAL_ONBOARDING_DISMISSED)
+        }
+    }
+
+    fun onUserSelectedToEditQuery(query: String) {
+        command.value = Command.EditQuery(query)
+    }
+
+    fun userUpdatedQuery(query: String) {
         appsJob?.cancel()
 
+        if (query.isBlank()) {
+            inputCleared()
+            return
+        }
+
         val trimmedQuery = query.trim()
-
-        if (trimmedQuery == currentViewState().queryText) {
-            return
-        }
-
-        if (trimmedQuery.isBlank()) {
-            userClearedQuery()
-            return
-        }
-
-        viewState.value = currentViewState().copy(queryText = trimmedQuery)
-        autoCompletePublishSubject.accept(trimmedQuery)
-
-        appsJob = viewModelScope.launch(dispatchers.io()) {
-            updateAppResults(deviceAppLookup.query(query))
-        }
+        resultsPublishSubject.accept(trimmedQuery)
     }
 
-    private fun updateAppResults(results: List<DeviceApp>) {
-        appResults = results
-        refreshViewStateResults()
-    }
+    private fun updateResults(results: SystemSearchResult) {
+        this.results = results
 
-    private fun updateAutocompleteResult(results: AutoCompleteResult) {
-        autocompleteResults = results
-        refreshViewStateResults()
-    }
+        val suggestions = results.autocomplete.suggestions
+        val appResults = results.deviceApps
+        val hasMultiResults = suggestions.isNotEmpty() && appResults.isNotEmpty()
 
-    private fun refreshViewStateResults() {
-        val hasMultiResults = autocompleteResults.suggestions.isNotEmpty() && appResults.isNotEmpty()
-        val fullSuggestions = autocompleteResults.suggestions
-        val updatedSuggestions = if (hasMultiResults) fullSuggestions.take(RESULTS_MAX_RESULTS_PER_GROUP) else fullSuggestions
+        val updatedSuggestions = if (hasMultiResults) suggestions.take(RESULTS_MAX_RESULTS_PER_GROUP) else suggestions
         val updatedApps = if (hasMultiResults) appResults.take(RESULTS_MAX_RESULTS_PER_GROUP) else appResults
 
-        viewState.postValue(
-            currentViewState().copy(
-                autocompleteResults = AutoCompleteResult(autocompleteResults.query, updatedSuggestions),
+        resultsViewState.postValue(
+            currentResultsState().copy(
+                autocompleteResults = AutoCompleteResult(results.autocomplete.query, updatedSuggestions),
                 appResults = updatedApps
             )
         )
     }
 
-    fun userTappedDax() {
-        command.value = Command.LaunchDuckDuckGo
+    private fun inputCleared() {
+        resultsPublishSubject.accept("")
+        resetResultsState()
     }
 
-    fun userClearedQuery() {
-        autoCompletePublishSubject.accept("")
-        resetState()
+    fun userTappedDax() {
+        viewModelScope.launch {
+            userStageStore.stageCompleted(AppStage.NEW)
+            pixel.fire(INTERSTITIAL_LAUNCH_DAX)
+            command.value = Command.LaunchDuckDuckGo
+        }
+    }
+
+    fun userRequestedClear() {
+        command.value = Command.ClearInputText
+        inputCleared()
     }
 
     fun userSubmittedQuery(query: String) {
-        command.value = Command.LaunchBrowser(query)
+        if (query.isBlank()) {
+            return
+        }
+
+        viewModelScope.launch {
+            userStageStore.stageCompleted(AppStage.NEW)
+            command.value = Command.LaunchBrowser(query.trim())
+            pixel.fire(INTERSTITIAL_LAUNCH_BROWSER_QUERY)
+        }
     }
 
     fun userSubmittedAutocompleteResult(query: String) {
         command.value = Command.LaunchBrowser(query)
+        pixel.fire(INTERSTITIAL_LAUNCH_BROWSER_QUERY)
     }
 
     fun userSelectedApp(app: DeviceApp) {
         command.value = Command.LaunchDeviceApplication(app)
+        pixel.fire(INTERSTITIAL_LAUNCH_DEVICE_APP)
     }
 
     fun appNotFound(app: DeviceApp) {
         command.value = Command.ShowAppNotFoundMessage(app.shortName)
-        deviceAppLookup.refreshAppList()
+
+        refreshAppList()
+    }
+
+    private fun refreshAppList() {
+        viewModelScope.launch(dispatchers.io()) {
+            deviceAppLookup.refreshAppList()
+        }
     }
 
     override fun onCleared() {
-        autoCompleteDisposable?.dispose()
-        autoCompleteDisposable = null
+        resultsDisposable?.dispose()
+        resultsDisposable = null
         super.onCleared()
     }
 

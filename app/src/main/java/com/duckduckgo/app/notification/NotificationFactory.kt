@@ -22,7 +22,6 @@ import android.content.Context
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import com.duckduckgo.app.browser.R
 import com.duckduckgo.app.notification.model.NotificationSpec
 import javax.inject.Inject
 
@@ -38,8 +37,9 @@ class NotificationFactory @Inject constructor(val context: Context, val manager:
             .setPriority(specification.channel.priority)
             .setSmallIcon(specification.icon)
             .setContentTitle(specification.title)
+            .setContentText(specification.description)
             .setStyle(NotificationCompat.BigTextStyle().bigText(specification.description))
-            .setColor(ContextCompat.getColor(context, R.color.cornflowerDark))
+            .setColor(ContextCompat.getColor(context, specification.color))
             .setContentIntent(launchIntent)
             .setDeleteIntent(cancelIntent)
 
@@ -47,6 +47,11 @@ class NotificationFactory @Inject constructor(val context: Context, val manager:
             builder.addAction(specification.icon, it, launchIntent)
         }
 
+        specification.closeButton?.let {
+            builder.addAction(specification.icon, it, cancelIntent)
+        }
+
         return builder.build()
     }
+
 }

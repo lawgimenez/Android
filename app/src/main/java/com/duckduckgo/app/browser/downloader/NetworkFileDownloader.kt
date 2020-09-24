@@ -18,16 +18,23 @@ package com.duckduckgo.app.browser.downloader
 
 import android.app.DownloadManager
 import android.content.Context
+import android.content.pm.PackageManager.*
 import android.webkit.CookieManager
-import android.webkit.URLUtil
 import androidx.core.net.toUri
-import timber.log.Timber
+import com.duckduckgo.app.browser.R
+import com.duckduckgo.app.browser.downloader.FileDownloader.PendingFileDownload
 import javax.inject.Inject
 
-class NetworkFileDownloader @Inject constructor(private val context: Context) {
+class NetworkFileDownloader @Inject constructor(private val context: Context, private val filenameExtractor: FilenameExtractor) {
 
-    fun download(pendingDownload: FileDownloader.PendingFileDownload) {
-        val guessedFileName = guessFileName(pendingDownload)
+    fun download(pendingDownload: PendingFileDownload, callback: FileDownloader.FileDownloadListener) {
+
+        if (!downloadManagerAvailable()) {
+            callback.downloadFailed(context.getString(R.string.downloadManagerDisabled), DownloadFailReason.DownloadManagerDisabled)
+            return
+        }
+
+        val guessedFileName = filenameExtractor.extract(pendingDownload)
 
         val request = DownloadManager.Request(pendingDownload.url.toUri()).apply {
             allowScanningByMediaScanner()
@@ -39,11 +46,19 @@ class NetworkFileDownloader @Inject constructor(private val context: Context) {
         }
         val manager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager?
         manager?.enqueue(request)
+        callback.downloadStartedNetworkFile()
     }
 
-    private fun guessFileName(pending: FileDownloader.PendingFileDownload): String? {
-        val guessedFileName = URLUtil.guessFileName(pending.url, pending.contentDisposition, pending.mimeType)
-        Timber.i("Guessed filename of $guessedFileName for url ${pending.url}")
-        return guessedFileName
+    private fun downloadManagerAvailable(): Boolean {
+        return when (context.packageManager.getApplicationEnabledSetting(DOWNLOAD_MANAGER_PACKAGE)) {
+            COMPONENT_ENABLED_STATE_DISABLED -> false
+            COMPONENT_ENABLED_STATE_DISABLED_USER -> false
+            COMPONENT_ENABLED_STATE_DISABLED_UNTIL_USED -> false
+            else -> true
+        }
+    }
+
+    companion object {
+        private const val DOWNLOAD_MANAGER_PACKAGE = "com.android.providers.downloads"
     }
 }

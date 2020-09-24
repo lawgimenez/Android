@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.duckduckgo.app.browser.R
 import com.duckduckgo.app.browser.tabpreview.WebViewPreviewPersister
+import com.duckduckgo.app.cta.ui.CtaViewModel
 import com.duckduckgo.app.global.DuckDuckGoActivity
 import com.duckduckgo.app.global.view.ClearPersonalDataAction
 import com.duckduckgo.app.global.view.FireDialog
@@ -45,7 +46,6 @@ import kotlinx.coroutines.launch
 import org.jetbrains.anko.longToast
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
-
 
 class TabSwitcherActivity : DuckDuckGoActivity(), TabSwitcherListener, CoroutineScope {
 
@@ -67,6 +67,9 @@ class TabSwitcherActivity : DuckDuckGoActivity(), TabSwitcherListener, Coroutine
     @Inject
     lateinit var pixel: Pixel
 
+    @Inject
+    lateinit var ctaViewModel: CtaViewModel
+
     private val viewModel: TabSwitcherViewModel by bindViewModel()
 
     private val tabsAdapter: TabSwitcherAdapter by lazy { TabSwitcherAdapter(this, webViewPreviewPersister) }
@@ -85,7 +88,7 @@ class TabSwitcherActivity : DuckDuckGoActivity(), TabSwitcherListener, Coroutine
         setContentView(R.layout.activity_tab_switcher)
         extractIntentExtras()
         configureViewReferences()
-        configureToolbar()
+        setupToolbar(toolbar)
         configureRecycler()
         configureObservers()
     }
@@ -97,11 +100,6 @@ class TabSwitcherActivity : DuckDuckGoActivity(), TabSwitcherListener, Coroutine
     private fun configureViewReferences() {
         tabsRecycler = findViewById(R.id.tabsRecycler)
         toolbar = findViewById(R.id.toolbar)
-    }
-
-    private fun configureToolbar() {
-        setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
 
     private fun configureRecycler() {
@@ -117,8 +115,7 @@ class TabSwitcherActivity : DuckDuckGoActivity(), TabSwitcherListener, Coroutine
         }))
         swipeListener.attachToRecyclerView(tabsRecycler)
 
-
-        tabGridItemDecorator = TabGridItemDecorator(themedContext, selectedTabId)
+        tabGridItemDecorator = TabGridItemDecorator(this, selectedTabId)
         tabsRecycler.addItemDecoration(tabGridItemDecorator)
     }
 
@@ -170,7 +167,7 @@ class TabSwitcherActivity : DuckDuckGoActivity(), TabSwitcherListener, Coroutine
 
     private fun onFire() {
         pixel.fire(Pixel.PixelName.FORGET_ALL_PRESSED_TABSWITCHING)
-        val dialog = FireDialog(context = this, clearPersonalDataAction = clearPersonalDataAction)
+        val dialog = FireDialog(context = this, clearPersonalDataAction = clearPersonalDataAction, ctaViewModel = ctaViewModel, variantManager = variantManager)
         dialog.clearComplete = { viewModel.onClearComplete() }
         dialog.show()
     }

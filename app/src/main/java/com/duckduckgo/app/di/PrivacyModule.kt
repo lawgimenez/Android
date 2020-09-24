@@ -19,20 +19,24 @@ package com.duckduckgo.app.di
 import android.content.Context
 import androidx.work.WorkManager
 import com.duckduckgo.app.browser.WebDataManager
-import com.duckduckgo.app.trackerdetection.EntityLookup
 import com.duckduckgo.app.fire.*
+import com.duckduckgo.app.fire.fireproofwebsite.data.FireproofWebsiteRepository
+import com.duckduckgo.app.global.DispatcherProvider
 import com.duckduckgo.app.global.file.FileDeleter
 import com.duckduckgo.app.global.view.ClearDataAction
 import com.duckduckgo.app.global.view.ClearPersonalDataAction
+import com.duckduckgo.app.location.GeoLocationPermissions
+import com.duckduckgo.app.location.GeoLocationPermissionsManager
+import com.duckduckgo.app.location.data.LocationPermissionsRepository
 import com.duckduckgo.app.privacy.model.PrivacyPractices
 import com.duckduckgo.app.privacy.model.PrivacyPracticesImpl
 import com.duckduckgo.app.privacy.store.TermsOfServiceStore
 import com.duckduckgo.app.settings.db.SettingsDataStore
 import com.duckduckgo.app.tabs.model.TabRepository
+import com.duckduckgo.app.trackerdetection.EntityLookup
 import com.duckduckgo.app.trackerdetection.TdsEntityLookup
 import com.duckduckgo.app.trackerdetection.db.TdsDomainEntityDao
 import com.duckduckgo.app.trackerdetection.db.TdsEntityDao
-import com.duckduckgo.app.trackerdetection.model.TdsEntity
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
@@ -58,9 +62,19 @@ class PrivacyModule {
         tabRepository: TabRepository,
         settingsDataStore: SettingsDataStore,
         cookieManager: DuckDuckGoCookieManager,
-        appCacheClearer: AppCacheClearer
+        appCacheClearer: AppCacheClearer,
+        geoLocationPermissions: GeoLocationPermissions
     ): ClearDataAction {
-        return ClearPersonalDataAction(context, dataManager, clearingStore, tabRepository, settingsDataStore, cookieManager, appCacheClearer)
+        return ClearPersonalDataAction(
+            context,
+            dataManager,
+            clearingStore,
+            tabRepository,
+            settingsDataStore,
+            cookieManager,
+            appCacheClearer,
+            geoLocationPermissions
+        )
     }
 
     @Provides
@@ -74,14 +88,26 @@ class PrivacyModule {
         workManager: WorkManager,
         settingsDataStore: SettingsDataStore,
         clearDataAction: ClearDataAction,
-        dataClearerTimeKeeper: BackgroundTimeKeeper
+        dataClearerTimeKeeper: BackgroundTimeKeeper,
+        dataClearerForegroundAppRestartPixel: DataClearerForegroundAppRestartPixel
     ): DataClearer {
-        return AutomaticDataClearer(workManager, settingsDataStore, clearDataAction, dataClearerTimeKeeper)
+        return AutomaticDataClearer(workManager, settingsDataStore, clearDataAction, dataClearerTimeKeeper, dataClearerForegroundAppRestartPixel)
     }
 
     @Provides
     @Singleton
     fun appCacheCleaner(context: Context, fileDeleter: FileDeleter): AppCacheClearer {
         return AndroidAppCacheClearer(context, fileDeleter)
+    }
+
+    @Provides
+    @Singleton
+    fun geoLocationPermissions(
+        context: Context,
+        locationPermissionsRepository: LocationPermissionsRepository,
+        fireproofWebsiteRepository: FireproofWebsiteRepository,
+        dispatcherProvider: DispatcherProvider
+    ): GeoLocationPermissions {
+        return GeoLocationPermissionsManager(context, locationPermissionsRepository, fireproofWebsiteRepository, dispatcherProvider)
     }
 }

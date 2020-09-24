@@ -21,7 +21,6 @@ import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.POST
 
-
 interface FeedbackService {
 
     @FormUrlEncoded
@@ -41,23 +40,8 @@ interface FeedbackService {
         @Field("atb") atb: String
     ): Call<Void>
 
-    @FormUrlEncoded
-    @POST("/feedback.js?type=app-feedback")
-    fun submitBrokenSite(
-        @Field("reason") reason: String = REASON_BROKEN_SITE,
-        @Field("comment") comment: String,
-        @Field("platform") platform: String = PLATFORM,
-        @Field("url") url: String? = null,
-        @Field("v") version: String,
-        @Field("os") api: Int,
-        @Field("manufacturer") manufacturer: String,
-        @Field("model") model: String,
-        @Field("atb") atb: String
-    ): Call<Void>
-
     companion object {
         const val REASON_GENERAL = "general"
-        const val REASON_BROKEN_SITE = "broken_site"
         private const val PLATFORM = "Android"
     }
 }

@@ -20,12 +20,13 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.drawable.Drawable
+import android.view.ContextThemeWrapper
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.duckduckgo.app.browser.R
 import com.duckduckgo.app.global.Theming.Constants.BROADCAST_THEME_CHANGED
 import com.duckduckgo.app.global.Theming.Constants.THEME_MAP
 import com.duckduckgo.app.settings.db.SettingsDataStore
-import com.duckduckgo.app.statistics.VariantManager
 
 enum class DuckDuckGoTheme {
     DARK,
@@ -38,6 +39,11 @@ object Theming {
         if (settingsDataStore.theme == null) {
             settingsDataStore.theme = DuckDuckGoTheme.LIGHT
         }
+    }
+
+    fun getThemedDrawable(context: Context, drawableId: Int, theme: DuckDuckGoTheme): Drawable {
+        val themeId: Int = THEME_MAP[Pair(R.style.AppTheme, theme)] ?: R.style.AppTheme_Light
+        return context.resources.getDrawable(drawableId, ContextThemeWrapper(context, themeId).theme)
     }
 
     object Constants {
@@ -74,5 +80,9 @@ fun DuckDuckGoActivity.sendThemeChangedBroadcast() {
 }
 
 private fun DuckDuckGoActivity.manifestThemeId(): Int {
-    return packageManager.getActivityInfo(componentName, 0).themeResource
+    return try {
+        packageManager.getActivityInfo(componentName, 0).themeResource
+    } catch (exception: Exception) {
+        R.style.AppTheme
+    }
 }

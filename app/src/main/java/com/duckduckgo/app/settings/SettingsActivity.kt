@@ -26,14 +26,18 @@ import android.view.View
 import android.widget.CompoundButton.OnCheckedChangeListener
 import android.widget.Toast
 import androidx.annotation.StringRes
-import androidx.appcompat.widget.SwitchCompat
 import androidx.lifecycle.Observer
 import com.duckduckgo.app.about.AboutDuckDuckGoActivity
 import com.duckduckgo.app.browser.R
 import com.duckduckgo.app.feedback.ui.common.FeedbackActivity
+import com.duckduckgo.app.fire.fireproofwebsite.ui.FireproofWebsitesActivity
 import com.duckduckgo.app.global.DuckDuckGoActivity
 import com.duckduckgo.app.global.sendThemeChangedBroadcast
 import com.duckduckgo.app.global.view.launchDefaultAppActivity
+import com.duckduckgo.app.global.view.quietlySetIsChecked
+import com.duckduckgo.app.icon.ui.ChangeIconActivity
+import com.duckduckgo.app.location.ui.LocationPermissionsActivity
+import com.duckduckgo.app.privacy.ui.WhitelistActivity
 import com.duckduckgo.app.settings.SettingsViewModel.AutomaticallyClearData
 import com.duckduckgo.app.settings.SettingsViewModel.Command
 import com.duckduckgo.app.settings.clear.ClearWhatOption
@@ -66,7 +70,7 @@ class SettingsActivity : DuckDuckGoActivity(), SettingsAutomaticallyClearWhatFra
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
-        setupActionBar()
+        setupToolbar(toolbar)
 
         configureUiEventHandlers()
         observeViewModel()
@@ -78,14 +82,18 @@ class SettingsActivity : DuckDuckGoActivity(), SettingsAutomaticallyClearWhatFra
     }
 
     private fun configureUiEventHandlers() {
+        changeAppIconLabel.setOnClickListener { viewModel.userRequestedToChangeIcon() }
         about.setOnClickListener { startActivity(AboutDuckDuckGoActivity.intent(this)) }
         provideFeedback.setOnClickListener { viewModel.userRequestedToSendFeedback() }
+        fireproofWebsites.setOnClickListener { viewModel.onFireproofWebsitesClicked() }
+        locationPermissions.setOnClickListener { viewModel.onLocationClicked() }
 
         lightThemeToggle.setOnCheckedChangeListener(lightThemeToggleListener)
         autocompleteToggle.setOnCheckedChangeListener(autocompleteToggleListener)
         setAsDefaultBrowserSetting.setOnCheckedChangeListener(defaultBrowserChangeListener)
         automaticallyClearWhatSetting.setOnClickListener { launchAutomaticallyClearWhatDialog() }
         automaticallyClearWhenSetting.setOnClickListener { launchAutomaticallyClearWhenDialog() }
+        whitelist.setOnClickListener { viewModel.onManageWhitelistSelected() }
     }
 
     private fun observeViewModel() {
@@ -96,6 +104,7 @@ class SettingsActivity : DuckDuckGoActivity(), SettingsAutomaticallyClearWhatFra
                 autocompleteToggle.quietlySetIsChecked(it.autoCompleteSuggestionsEnabled, autocompleteToggleListener)
                 updateDefaultBrowserViewVisibility(it)
                 updateAutomaticClearDataOptions(it.automaticallyClearData)
+                changeAppIcon.setImageResource(it.appIcon.icon)
             }
         })
 
@@ -130,6 +139,10 @@ class SettingsActivity : DuckDuckGoActivity(), SettingsAutomaticallyClearWhatFra
     private fun processCommand(it: Command?) {
         when (it) {
             is Command.LaunchFeedback -> launchFeedback()
+            is Command.LaunchFireproofWebsites -> launchFireproofWebsites()
+            is Command.LaunchLocation -> launchLocation()
+            is Command.LaunchWhitelist -> launchWhitelist()
+            is Command.LaunchAppIcon -> launchAppIconChange()
             is Command.UpdateTheme -> sendThemeChangedBroadcast()
         }
     }
@@ -151,14 +164,29 @@ class SettingsActivity : DuckDuckGoActivity(), SettingsAutomaticallyClearWhatFra
         }
     }
 
-    private fun setupActionBar() {
-        setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-    }
-
     private fun launchFeedback() {
         val options = ActivityOptions.makeSceneTransitionAnimation(this).toBundle()
         startActivityForResult(Intent(FeedbackActivity.intent(this)), FEEDBACK_REQUEST_CODE, options)
+    }
+
+    private fun launchFireproofWebsites() {
+        val options = ActivityOptions.makeSceneTransitionAnimation(this).toBundle()
+        startActivity(FireproofWebsitesActivity.intent(this), options)
+    }
+
+    private fun launchLocation() {
+        val options = ActivityOptions.makeSceneTransitionAnimation(this).toBundle()
+        startActivity(LocationPermissionsActivity.intent(this), options)
+    }
+
+    private fun launchWhitelist() {
+        val options = ActivityOptions.makeSceneTransitionAnimation(this).toBundle()
+        startActivity(WhitelistActivity.intent(this), options)
+    }
+
+    private fun launchAppIconChange() {
+        val options = ActivityOptions.makeSceneTransitionAnimation(this).toBundle()
+        startActivityForResult(Intent(ChangeIconActivity.intent(this)), CHANGE_APP_ICON_REQUEST_CODE, options)
     }
 
     override fun onAutomaticallyClearWhatOptionSelected(clearWhatSetting: ClearWhatOption) {
@@ -207,23 +235,10 @@ class SettingsActivity : DuckDuckGoActivity(), SettingsAutomaticallyClearWhatFra
         private const val CLEAR_WHAT_DIALOG_TAG = "CLEAR_WHAT_DIALOG_FRAGMENT"
         private const val CLEAR_WHEN_DIALOG_TAG = "CLEAR_WHEN_DIALOG_FRAGMENT"
         private const val FEEDBACK_REQUEST_CODE = 100
+        private const val CHANGE_APP_ICON_REQUEST_CODE = 101
 
         fun intent(context: Context): Intent {
             return Intent(context, SettingsActivity::class.java)
         }
     }
-}
-
-/**
- * Utility method to toggle a switch without broadcasting to its change listener
- *
- * This is useful for when setting the checked state from the view model where we want the switch state to match some value, but this act itself
- * should not result in the checked change event handler being fired
- *
- * Requires the change listener to be provided explicitly as it is held privately in the super class and cannot be accessed automatically.
- */
-private fun SwitchCompat.quietlySetIsChecked(newCheckedState: Boolean, changeListener: OnCheckedChangeListener?) {
-    setOnCheckedChangeListener(null)
-    isChecked = newCheckedState
-    setOnCheckedChangeListener(changeListener)
 }

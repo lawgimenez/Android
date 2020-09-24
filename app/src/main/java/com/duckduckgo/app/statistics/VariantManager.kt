@@ -19,7 +19,6 @@ package com.duckduckgo.app.statistics
 import androidx.annotation.WorkerThread
 import com.duckduckgo.app.statistics.VariantManager.Companion.DEFAULT_VARIANT
 import com.duckduckgo.app.statistics.VariantManager.Companion.referrerVariant
-import com.duckduckgo.app.statistics.VariantManager.VariantFeature.*
 import com.duckduckgo.app.statistics.store.StatisticsDataStore
 import timber.log.Timber
 import java.util.*
@@ -29,12 +28,9 @@ interface VariantManager {
 
     // variant-dependant features listed here
     sealed class VariantFeature {
-        object ConceptTest : VariantFeature()
-        object SuppressHomeTabWidgetCta : VariantFeature()
-        object SuppressOnboardingDefaultBrowserCta : VariantFeature()
-        object SuppressOnboardingDefaultBrowserContinueScreen : VariantFeature()
-        object DefaultBrowserDaxCta : VariantFeature()
-        object SearchWidgetDaxCta : VariantFeature()
+        object SerpHeaderQueryReplacement : VariantFeature()
+        object SerpHeaderRemoval : VariantFeature()
+        object FireButtonEducation : VariantFeature()
     }
 
     companion object {
@@ -47,45 +43,47 @@ interface VariantManager {
         val ACTIVE_VARIANTS = listOf(
             // SERP variants. "sc" may also be used as a shared control for mobile experiments in
             // the future if we can filter by app version
-            Variant(key = "sc", weight = 0.0, features = emptyList(), filterBy = { noFilter() }),
-            Variant(key = "se", weight = 0.0, features = emptyList(), filterBy = { noFilter() }),
+            Variant(key = "sc", weight = 1.0, features = emptyList(), filterBy = { isSerpRegionToggleCountry() }),
+            Variant(key = "se", weight = 1.0, features = emptyList(), filterBy = { isSerpRegionToggleCountry() }),
 
-            // Concept test experiment
-            Variant(key = "mc", weight = 0.0, features = emptyList(), filterBy = { isEnglishLocale() }),
-            Variant(
-                key = "me",
-                weight = 0.0,
-                features = listOf(ConceptTest, SuppressHomeTabWidgetCta, SuppressOnboardingDefaultBrowserCta),
-                filterBy = { isEnglishLocale() }),
-            Variant(
-                key = "md",
-                weight = 0.0,
-                features = listOf(SuppressHomeTabWidgetCta, SuppressOnboardingDefaultBrowserCta),
-                filterBy = { isEnglishLocale() }),
+            // Single Search Bar Experiments
+            Variant(key = "zg", weight = 0.0, features = emptyList(), filterBy = { noFilter() }),
+            Variant(key = "zh", weight = 0.0, features = listOf(VariantFeature.SerpHeaderQueryReplacement), filterBy = { noFilter() }),
+            Variant(key = "zi", weight = 0.0, features = listOf(VariantFeature.SerpHeaderRemoval), filterBy = { noFilter() }),
 
-            // Insert CTAs on Concept test experiment
+            // Fire Education Experiments
+            Variant(key = "zm", weight = 1.0, features = emptyList(), filterBy = { isEnglishLocale() }),
             Variant(
-                key = "mj",
+                key = "zr",
                 weight = 1.0,
-                features = listOf(ConceptTest, SuppressOnboardingDefaultBrowserContinueScreen),
-                filterBy = { isEnglishLocale() }),
-            Variant(
-                key = "mh",
-                weight = 1.0,
-                features = listOf(
-                    ConceptTest,
-                    SuppressHomeTabWidgetCta,
-                    SuppressOnboardingDefaultBrowserCta,
-                    DefaultBrowserDaxCta,
-                    SearchWidgetDaxCta
-                ),
+                features = listOf(VariantFeature.FireButtonEducation),
                 filterBy = { isEnglishLocale() })
-
             // All groups in an experiment (control and variants) MUST use the same filters
         )
 
+        val REFERRER_VARIANTS = listOf(
+            Variant(RESERVED_EU_AUCTION_VARIANT, features = emptyList(), filterBy = { noFilter() })
+        )
+
+        private val serpRegionToggleTargetCountries = listOf(
+            "AU",
+            "AT",
+            "DK",
+            "FI",
+            "FR",
+            "DE",
+            "IT",
+            "IE",
+            "NZ",
+            "NO",
+            "ES",
+            "SE",
+            "GB"
+        )
+
         fun referrerVariant(key: String): Variant {
-            return Variant(key, features = emptyList(), filterBy = { noFilter() })
+            val knownReferrer = REFERRER_VARIANTS.firstOrNull { it.key == key }
+            return knownReferrer ?: Variant(key, features = emptyList(), filterBy = { noFilter() })
         }
 
         private fun noFilter(): Boolean = true
@@ -93,6 +91,11 @@ interface VariantManager {
         private fun isEnglishLocale(): Boolean {
             val locale = Locale.getDefault()
             return locale != null && locale.language == "en"
+        }
+
+        private fun isSerpRegionToggleCountry(): Boolean {
+            val locale = Locale.getDefault()
+            return locale != null && serpRegionToggleTargetCountries.contains(locale.country)
         }
     }
 

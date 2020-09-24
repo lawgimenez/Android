@@ -44,6 +44,9 @@ abstract class TabsDao {
     @Query("select * from tabs where tabId = :tabId")
     abstract fun tab(tabId: String): TabEntity?
 
+    @Query("select tabId from tabs where url LIKE :query")
+    abstract suspend fun selectTabByUrl(query: String): String?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract fun insertTab(tab: TabEntity)
 
@@ -72,6 +75,24 @@ abstract class TabsDao {
     @Transaction
     open fun deleteTabAndUpdateSelection(tab: TabEntity) {
         deleteTab(tab)
+
+        if (selectedTab() != null) {
+            return
+        }
+
+        firstTab()?.let {
+            insertTabSelection(TabSelectionEntity(tabId = it.tabId))
+        }
+    }
+
+    @Transaction
+    open fun deleteTabAndUpdateSelection(tab: TabEntity, newSelectedTab: TabEntity? = null) {
+        deleteTab(tab)
+
+        if (newSelectedTab != null) {
+            insertTabSelection(TabSelectionEntity(tabId = newSelectedTab.tabId))
+            return
+        }
 
         if (selectedTab() != null) {
             return

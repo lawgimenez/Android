@@ -42,6 +42,9 @@ class DaoModule {
     fun providesTemporaryTrackingWhitelist(database: AppDatabase) = database.temporaryTrackingWhitelistDao()
 
     @Provides
+    fun providesUserWhitelist(database: AppDatabase) = database.userWhitelistDao()
+
+    @Provides
     fun providesNetworkLeaderboardDao(database: AppDatabase) = database.networkLeaderboardDao()
 
     @Provides
@@ -70,4 +73,19 @@ class DaoModule {
 
     @Provides
     fun uncaughtExceptionDao(database: AppDatabase) = database.uncaughtExceptionDao()
+
+    @Provides
+    fun tdsDao(database: AppDatabase) = database.tdsDao()
+
+    @Provides
+    fun userStageDao(database: AppDatabase) = database.userStageDao()
+
+    @Provides
+    fun fireproofWebsiteDao(database: AppDatabase) = database.fireproofWebsiteDao()
+
+    @Provides
+    fun userEventsDao(database: AppDatabase) = database.userEventsDao()
+
+    @Provides
+    fun locationPermissionsDao(database: AppDatabase) = database.locationPermissionsDao()
 }

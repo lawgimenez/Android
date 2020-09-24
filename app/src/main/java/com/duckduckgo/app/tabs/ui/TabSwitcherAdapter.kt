@@ -73,7 +73,6 @@ class TabSwitcherAdapter(private val itemClickListener: TabSwitcherListener, pri
             .error(R.drawable.ic_globe_gray_16dp)
             .into(holder.favicon)
 
-
         loadTabPreviewImage(tab, glide, holder)
 
         attachClickListeners(holder, tab)
@@ -119,10 +118,15 @@ class TabSwitcherAdapter(private val itemClickListener: TabSwitcherListener, pri
     }
 
     private fun loadTabPreviewImage(tab: TabEntity, glide: GlideRequests, holder: TabViewHolder) {
-        val previewFile = tab.tabPreviewFile ?: return
+        val previewFile = tab.tabPreviewFile
+        if (previewFile == null) {
+            glide.clear(holder.tabPreview)
+            return
+        }
 
         val cachedWebViewPreview = File(webViewPreviewPersister.fullPathForFile(tab.tabId, previewFile))
         if (!cachedWebViewPreview.exists()) {
+            glide.clear(holder.tabPreview)
             return
         }
 
@@ -166,5 +170,4 @@ class TabSwitcherAdapter(private val itemClickListener: TabSwitcherListener, pri
         val tabUnread: ImageView,
         val cardContentsContainer: ViewGroup
     ) : ViewHolder(root)
-
 }

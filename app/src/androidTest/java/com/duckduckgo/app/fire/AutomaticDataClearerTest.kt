@@ -19,11 +19,13 @@
 package com.duckduckgo.app.fire
 
 import androidx.test.annotation.UiThreadTest
+import androidx.test.platform.app.InstrumentationRegistry
 import androidx.work.WorkManager
 import com.duckduckgo.app.global.view.ClearDataAction
 import com.duckduckgo.app.settings.clear.ClearWhatOption
 import com.duckduckgo.app.settings.clear.ClearWhenOption
 import com.duckduckgo.app.settings.db.SettingsDataStore
+import com.duckduckgo.app.statistics.pixels.Pixel
 import com.nhaarman.mockitokotlin2.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -39,12 +41,14 @@ class AutomaticDataClearerTest {
     private val mockClearAction: ClearDataAction = mock()
     private val mockTimeKeeper: BackgroundTimeKeeper = mock()
     private val mockWorkManager: WorkManager = mock()
+    private val pixel: Pixel = mock()
+    private val dataClearerForegroundAppRestartPixel = DataClearerForegroundAppRestartPixel(InstrumentationRegistry.getInstrumentation().targetContext, pixel)
 
     @UiThreadTest
     @Before
     fun setup() {
         whenever(mockSettingsDataStore.hasBackgroundTimestampRecorded()).thenReturn(true)
-        testee = AutomaticDataClearer(mockWorkManager, mockSettingsDataStore, mockClearAction, mockTimeKeeper)
+        testee = AutomaticDataClearer(mockWorkManager, mockSettingsDataStore, mockClearAction, mockTimeKeeper, dataClearerForegroundAppRestartPixel)
     }
 
     private suspend fun simulateLifecycle(isFreshAppLaunch: Boolean) {
@@ -487,6 +491,68 @@ class AutomaticDataClearerTest {
         }
     }
 
+    @Test
+    fun whenNotFreshAppLaunchAndIconJustChangedButAppNotUsedThenShouldNotClear() = runBlocking<Unit> {
+        val isFreshAppLaunch = false
+
+        configureUserOptions(ClearWhatOption.CLEAR_TABS_AND_DATA, ClearWhenOption.APP_EXIT_OR_5_MINS)
+        configureAppUsedSinceLastClear()
+        configureAppIconJustChanged()
+
+        withContext(Dispatchers.Main) {
+            simulateLifecycle(isFreshAppLaunch)
+            verifyAppIconFlagReset()
+            verifyEverythingNotCleared()
+        }
+    }
+
+    @Test
+    fun whenFreshAppLaunchAndIconJustChangedButAppUsedThenShouldClear() = runBlocking<Unit> {
+        val isFreshAppLaunch = true
+
+        configureUserOptions(ClearWhatOption.CLEAR_TABS_AND_DATA, ClearWhenOption.APP_EXIT_OR_5_MINS)
+        configureAppUsedSinceLastClear()
+        configureAppIconJustChanged()
+
+        withContext(Dispatchers.Main) {
+            simulateLifecycle(isFreshAppLaunch)
+            verifyAppIconFlagReset()
+            verifyEverythingCleared()
+        }
+    }
+
+    @Test
+    fun whenNotFreshAppLaunchAndIconNotChangedThenShouldClear() = runBlocking<Unit> {
+        val isFreshAppLaunch = false
+
+        configureAppIconNotChanged()
+        configureAppNotUsedSinceLastClear()
+        configureUserOptions(ClearWhatOption.CLEAR_TABS_AND_DATA, ClearWhenOption.APP_EXIT_OR_5_MINS)
+        configureEnoughTimePassed()
+        configureAppUsedSinceLastClear()
+
+        withContext(Dispatchers.Main) {
+            simulateLifecycle(isFreshAppLaunch)
+            verifyEverythingCleared()
+        }
+    }
+
+    @Test
+    fun whenNotFreshAppLaunchAndIconNotChangedAppUsedThenShouldClear() = runBlocking<Unit> {
+        val isFreshAppLaunch = false
+
+        configureAppIconNotChanged()
+        configureAppUsedSinceLastClear()
+        configureUserOptions(ClearWhatOption.CLEAR_TABS_AND_DATA, ClearWhenOption.APP_EXIT_OR_5_MINS)
+        configureEnoughTimePassed()
+        configureAppUsedSinceLastClear()
+
+        withContext(Dispatchers.Main) {
+            simulateLifecycle(isFreshAppLaunch)
+            verifyEverythingCleared()
+        }
+    }
+
     private fun configureUserOptions(whatOption: ClearWhatOption, whenOption: ClearWhenOption) {
         whenever(mockSettingsDataStore.automaticallyClearWhenOption).thenReturn(whenOption)
         whenever(mockSettingsDataStore.automaticallyClearWhatOption).thenReturn(whatOption)
@@ -508,6 +574,14 @@ class AutomaticDataClearerTest {
         whenever(mockTimeKeeper.hasEnoughTimeElapsed(any(), any(), any())).thenReturn(false)
     }
 
+    private fun configureAppIconJustChanged() {
+        whenever(mockSettingsDataStore.appIconChanged).thenReturn(true)
+    }
+
+    private fun configureAppIconNotChanged() {
+        whenever(mockSettingsDataStore.appIconChanged).thenReturn(false)
+    }
+
     private suspend fun verifyTabsCleared() {
         verify(mockClearAction).clearTabsAsync(any())
     }
@@ -522,5 +596,9 @@ class AutomaticDataClearerTest {
 
     private suspend fun verifyEverythingNotCleared() {
         verify(mockClearAction, never()).clearTabsAndAllDataAsync(any(), any())
+    }
+
+    private fun verifyAppIconFlagReset() {
+        verify(mockSettingsDataStore).appIconChanged = false
     }
 }

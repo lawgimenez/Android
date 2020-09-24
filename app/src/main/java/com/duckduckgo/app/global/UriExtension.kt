@@ -53,6 +53,11 @@ val Uri.hasIpHost: Boolean
         return baseHost?.matches(IP_REGEX) ?: false
     }
 
+val Uri.absoluteString: String
+    get() {
+        return "$scheme://$host$path"
+    }
+
 fun Uri.isHttpsVersionOfUri(other: Uri): Boolean {
     return isHttps && other.isHttp && other.toHttps == this
 }
@@ -75,10 +80,13 @@ fun Uri.toDesktopUri(): Uri {
     return parse(newUrl)
 }
 
-private const val faviconBaseUrlFormat = "https://proxy.duckduckgo.com/ip3/%s.ico"
+// to obtain a favicon for a website, we go directly to the site and look for /favicon.ico
+private const val faviconBaseUrlFormat = "%s://%s/favicon.ico"
 
 fun Uri?.faviconLocation(): Uri? {
-    val host = this?.host
+    if (this == null) return null
+    val host = this.host
     if (host.isNullOrBlank()) return null
-    return parse(String.format(faviconBaseUrlFormat, host))
+    val isHttps = this.isHttps
+    return parse(String.format(faviconBaseUrlFormat, if (isHttps) "https" else "http", host))
 }

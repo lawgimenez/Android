@@ -166,7 +166,7 @@ class ExperimentationVariantManagerTest {
     }
 
     @Test
-    fun whenReferrerVariantReturnedThenNoFeaturesEnabled() {
+    fun whenUnknownReferrerVariantReturnedThenNoFeaturesEnabled() {
         mockUpdateScenario("xx")
         val variant = testee.getVariant(activeVariants)
         assertTrue(variant.features.isEmpty())
